@@ -22,6 +22,21 @@ export const BOOKS_DATA = [
     quote: "It was as though he could not unlock his love until he had unlocked his grief.",
     chapters: [
       {
+        title: "About the Author",
+        content: `Philippa Perry is an acclaimed psychotherapist and author who has been in clinical practice for over twenty years. She is the agony aunt for Red magazine, a regular contributor to The Guardian and The Observer, and has presented several television and radio documentaries, including The Great British Sex Survey and Being Bipolar.
+
+Her bestselling works have touched millions of lives by cutting through dogma, prescriptive rules, and parenting clichés, offering instead an empathetic, psychologically grounded framework for deep human connection.
+
+She lives in London with her husband, the artist Grayson Perry, and they have one grown-up daughter, Flo.`
+      },
+      {
+        title: "Dedication & Foreword",
+        content: `For Flo, who taught me how to parent, and for all parents striving to heal their past so they can love their children in the present.
+
+Foreword:
+Most parenting books focus on strategies, charts, and disciplinary regimes. This book is fundamentally different. It is not about managing your child; it is about managing yourself, understanding where your reactions originate, and cultivating a warm, accepting relationship where both parent and child can flourish.`
+      },
+      {
         title: "Introduction: Parenting is a Relationship",
         content: `Parenting is not a series of tricks, rules, or behavioral conditioning. At its core, parenting is a relationship. It is the most significant relationship your child will ever have, shaping how they view themselves, how they relate to others, and how they navigate emotional storms throughout their lives.
 
@@ -108,6 +123,26 @@ Close your eyes and remember your very earliest memory. It may just be an image 
 When your child spills a cup of milk or refuses to put on their shoes, what voice speaks in your head? Is it a voice of catastrophic dread ('They will never learn', 'I am a failure as a parent') or is it a voice of grounded calm ('They are learning, this is just a spilled drink')?
 
 Becoming mindful of our self-talk allows us to pause between stimulus and response. In that pause lies our capacity to choose connection over reaction.`
+      },
+      {
+        title: "Good parent/bad parent: the downside of judgement",
+        content: `When we split parents into 'good' and 'bad', we trap ourselves in a prison of performance anxiety. 
+
+Parenting is not a contest in moral superiority. Judging other parents or constantly chastising ourselves erodes our instinctive warmth. When you make a mistake, acknowledge it with self-compassion instead of spiraling into shame.
+
+Children do not need perfect parents; they need parents who are human, responsive, and capable of repair.`
+      },
+      {
+        title: "Part Two: Your Child’s Environment",
+        content: `A child's emotional environment is composed of the emotional relationships that surround them. The atmosphere in your home is like the air your child breathes.
+
+It is not high-end toys, private tutoring, or immaculate nurseries that cultivate a thriving child; it is the psychological safety of knowing that their feelings are welcomed, their boundaries respected, and their home is a haven of goodwill.`
+      },
+      {
+        title: "It’s not family structure that matters, it’s how we all get on",
+        content: `Whether you are a single parent, co-parenting, in a blended family, or living in an extended multigenerational household, what dictates child well-being is not the configuration of the adults, but the quality of mutual respect between them.
+
+Conflict between caregivers is inevitable, but when conflict is handled constructively—without contempt, stonewalling, or vindictiveness—children learn that differences can be navigated safely.`
       }
     ]
   },

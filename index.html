@@ -69,6 +69,7 @@
               type="text" 
               id="global-search-input" 
               placeholder="Cari judul, penulis, rasi genre... (Tekan '/' untuk cari)" 
+              data-i18n-ph="search_placeholder"
               aria-label="Cari buku atau rasi bintang"
               autocomplete="off"
             />
@@ -79,9 +80,9 @@
           <!-- Header Actions -->
           <div class="nav-actions">
             <!-- Ambient Cosmic Chime Audio Switch -->
-            <button type="button" class="icon-action-btn" id="ambient-audio-btn" title="Nyalakan Musik Semesta Santai" aria-label="Toggle Musik Kosmik">
+            <button type="button" class="icon-action-btn" id="ambient-audio-btn" title="Nyalakan Musik Semesta Santai" data-i18n-title="ambient_music_title" aria-label="Toggle Musik Kosmik">
               <span class="btn-icon" id="ambient-audio-icon">🪐</span>
-              <span class="btn-tooltip">Musik Kosmik</span>
+              <span class="btn-tooltip" data-i18n="ambient_music">Musik Kosmik</span>
             </button>
 
             <!-- Language Selector -->
@@ -103,7 +104,7 @@
             <!-- Upload EPUB / PDF Button -->
             <button type="button" class="upload-pill-btn" id="open-upload-btn" aria-label="Upload Buku EPUB atau PDF">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>Upload EPUB/PDF</span>
+              <span data-i18n="upload_btn">Upload EPUB/PDF</span>
             </button>
 
             <!-- My Cosmic Shelf Button -->
@@ -112,14 +113,14 @@
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
               </svg>
-              <span>Rak Kosmik</span>
+              <span data-i18n="shelf_btn">Rak Kosmik</span>
               <span class="shelf-count-badge" id="shelf-badge-count">0</span>
             </button>
 
             <!-- PWA Install Button -->
             <button type="button" class="install-pwa-btn" id="install-pwa-btn" title="Pasang Aplikasi Libroverse di Layar Utama" hidden>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-              <span>Pasang App</span>
+              <span data-i18n="install_app">Pasang App</span>
             </button>
           </div>
         </div>
@@ -136,16 +137,16 @@
           <div class="hero-content">
             <div class="hero-badge">
               <span class="badge-sparkle">✨</span>
-              <span>Gerbang Literasi Bebas Tanpa Batas</span>
-              <span class="badge-pill">Gratis Selamanya</span>
+              <span data-i18n="hero_badge">Gerbang Literasi Bebas Tanpa Batas</span>
+              <span class="badge-pill" data-i18n="hero_badge_pill">Gratis Selamanya</span>
             </div>
 
-            <h1 class="hero-title">
+            <h1 class="hero-title" data-i18n-html="hero_title">
               Jelajahi Semesta Buku di <br />
               <span class="gradient-text">Libroverse</span>
             </h1>
 
-            <p class="hero-subtitle">
+            <p class="hero-subtitle" data-i18n-html="hero_subtitle">
               Temukan ribuan karya sastra dunia, fiksi ilmiah antariksa, cerita nusantara, dan audiobook memukau. Baca daring langsung di peramban atau unduh file bersih <strong>EPUB & PDF</strong> kapan saja.
             </p>
 
@@ -157,17 +158,18 @@
                   type="text" 
                   id="hero-prompt-input" 
                   placeholder="Ketik alur cerita yang kamu bayangkan, suasana hati, atau tokoh impian..."
+                  data-i18n-ph="hero_prompt_placeholder"
                   aria-label="Cari buku berdasarkan suasana hati"
                 />
                 <button type="button" class="hero-explore-btn" id="hero-submit-btn">
-                  <span>Jelajahi</span>
+                  <span data-i18n="explore_btn">Jelajahi</span>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
               </div>
 
               <!-- Quick Mood Chips -->
               <div class="hero-quick-chips">
-                <span class="chips-label">Inspirasi Galaksi:</span>
+                <span class="chips-label" data-i18n="inspiration_label">Inspirasi Galaksi:</span>
                 <button type="button" class="quick-chip" data-query="Sci-Fi">🚀 Antariksa & Waktu</button>
                 <button type="button" class="quick-chip" data-query="Nusantara">🌴 Sastra Nusantara</button>
                 <button type="button" class="quick-chip" data-query="Filsafat">🏛️ Filsafat & Ketenangan</button>
@@ -178,7 +180,7 @@
               <!-- Personal Upload Quick Action -->
               <div class="hero-personal-upload-row">
                 <button type="button" class="hero-upload-shortcut-btn" id="hero-upload-btn">
-                  <span>📤 Upload Koleksi Buku Saya (EPUB / PDF)</span>
+                  <span data-i18n="hero_upload_action">📤 Upload Koleksi Buku Saya (EPUB / PDF)</span>
                 </button>
               </div>
             </div>
@@ -187,22 +189,22 @@
             <div class="hero-stats-ribbon">
               <div class="stat-item">
                 <span class="stat-value">14,800+</span>
-                <span class="stat-label">Buku Digital Gratis</span>
+                <span class="stat-label" data-i18n="stat_books">Buku Digital Gratis</span>
               </div>
               <div class="stat-divider" aria-hidden="true"></div>
               <div class="stat-item">
                 <span class="stat-value">2,400+</span>
-                <span class="stat-label">Audiobook Bersuara</span>
+                <span class="stat-label" data-i18n="stat_audio">Audiobook Bersuara</span>
               </div>
               <div class="stat-divider" aria-hidden="true"></div>
               <div class="stat-item">
                 <span class="stat-value">24+</span>
-                <span class="stat-label">Bahasa Dunia</span>
+                <span class="stat-label" data-i18n="stat_lang">Bahasa Dunia</span>
               </div>
               <div class="stat-divider" aria-hidden="true"></div>
               <div class="stat-item">
                 <span class="stat-value">100%</span>
-                <span class="stat-label">Domain Publik & Legal</span>
+                <span class="stat-label" data-i18n="stat_legal">Domain Publik & Legal</span>
               </div>
             </div>
           </div>
@@ -210,7 +212,7 @@
           <!-- Featured Spotlight Card (Hero Side Highlight) -->
           <div class="hero-spotlight">
             <div class="spotlight-card" id="hero-spotlight-card">
-              <div class="spotlight-badge">★ Sorotan Bintang Hari Ini</div>
+              <div class="spotlight-badge" data-i18n="spotlight_badge">★ Sorotan Bintang Hari Ini</div>
               <div class="spotlight-cover-wrapper">
                 <img src="/assets/covers/celestial-odyssey.jpg" alt="Sampul The Celestial Odyssey" class="spotlight-cover-img" />
                 <div class="spotlight-cover-glow" aria-hidden="true"></div>
@@ -227,11 +229,11 @@
                 <div class="spotlight-actions">
                   <button type="button" class="btn-primary-glow" id="spotlight-read-btn" data-id="celestial-odyssey">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                    <span>Baca Cuplikan</span>
+                    <span data-i18n="read_sample">Baca Cuplikan</span>
                   </button>
                   <button type="button" class="btn-secondary-glass" id="spotlight-listen-btn" data-id="celestial-odyssey">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    <span>Putar Audio</span>
+                    <span data-i18n="play_audio">Putar Audio</span>
                   </button>
                 </div>
               </div>
@@ -243,18 +245,18 @@
         <section class="catalogue-section" id="katalog">
           <div class="section-header">
             <div class="section-title-wrap">
-              <span class="section-kicker">✦ Rasi Bintang Pustaka</span>
-              <h2 class="section-title">Jelajahi Koleksi Semesta</h2>
+              <span class="section-kicker" data-i18n="catalogue_kicker">✦ Rasi Bintang Pustaka</span>
+              <h2 class="section-title" data-i18n="catalogue_title">Jelajahi Koleksi Semesta</h2>
             </div>
 
             <!-- Filters Bar (Formats & Sort) -->
             <div class="filters-bar">
               <!-- Format Filter Pills -->
               <div class="format-filters" role="group" aria-label="Filter Format Buku">
-                <button type="button" class="format-btn active" data-format="all">Semua Format</button>
-                <button type="button" class="format-btn" data-format="epub">📖 EPUB</button>
-                <button type="button" class="format-btn" data-format="pdf">📄 PDF</button>
-                <button type="button" class="format-btn" data-format="audio">🎧 Audiobook</button>
+                <button type="button" class="format-btn active" data-format="all" data-i18n="format_all">Semua Format</button>
+                <button type="button" class="format-btn" data-format="epub" data-i18n="format_epub">📖 EPUB</button>
+                <button type="button" class="format-btn" data-format="pdf" data-i18n="format_pdf">📄 PDF</button>
+                <button type="button" class="format-btn" data-format="audio" data-i18n="format_audio">🎧 Audiobook</button>
               </div>
 
               <!-- Sorting Selector -->
@@ -289,9 +291,9 @@
           <!-- Empty State (Hidden by default) -->
           <div class="empty-state" id="empty-state" hidden>
             <div class="empty-icon">🪐</div>
-            <h3 class="empty-title">Tidak ada bintang di koordinat ini</h3>
-            <p class="empty-text">Coba ubah kata kunci pencarian atau reset filter genre untuk menemukan buku lainnya.</p>
-            <button type="button" class="btn-primary-glow" id="reset-filters-btn">Reset Semua Filter</button>
+            <h3 class="empty-title" data-i18n="empty_title">Tidak ada bintang di koordinat ini</h3>
+            <p class="empty-text" data-i18n="empty_text">Coba ubah kata kunci pencarian atau reset filter genre untuk menemukan buku lainnya.</p>
+            <button type="button" class="btn-primary-glow" id="reset-filters-btn" data-i18n="reset_filters">Reset Semua Filter</button>
           </div>
         </section>
 
@@ -300,14 +302,14 @@
           <div class="curated-card-banner">
             <div class="curated-glow" aria-hidden="true"></div>
             <div class="curated-content">
-              <span class="curated-badge">🌴 Mahakarya Nusantara</span>
-              <h2 class="curated-title">Warisan Sastra & Cerita Kepulauan Langit</h2>
-              <p class="curated-desc">
+              <span class="curated-badge" data-i18n="curated_badge">🌴 Mahakarya Nusantara</span>
+              <h2 class="curated-title" data-i18n="curated_title">Warisan Sastra & Cerita Kepulauan Langit</h2>
+              <p class="curated-desc" data-i18n="curated_desc">
                 Dari hikayat pelaut Nusantara yang membaca arah lewat rasi bintang pari, hingga fiksi spekulatif masa depan pulau-pulau melayang. Nikmati karya sastra Indonesia pilihan dengan narasi suara berkualitas studio.
               </p>
               <div class="curated-actions">
                 <button type="button" class="btn-primary-glow" id="explore-nusantara-btn">
-                  <span>Telusuri Koleksi Nusantara</span>
+                  <span data-i18n="curated_btn">Telusuri Koleksi Nusantara</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
               </div>
@@ -322,19 +324,19 @@
         <section class="community-section" id="komunitas">
           <div class="community-card">
             <div class="community-icon-box">📚✨</div>
-            <h2 class="community-title">Dapatkan Kiriman Bintang Buku Baru</h2>
-            <p class="community-desc">
+            <h2 class="community-title" data-i18n="newsletter_title">Dapatkan Kiriman Bintang Buku Baru</h2>
+            <p class="community-desc" data-i18n="newsletter_desc">
               Satu surat semesta setiap minggu berisi rekomendasi buku gratis terbaik, ulasan astronomis, dan rilis audiobook terbaru langsung ke kotak masukmu.
             </p>
             <form class="community-form" id="newsletter-form">
               <div class="form-input-group">
-                <input type="email" id="newsletter-email" placeholder="nama@semesta.com" required aria-label="Alamat Email" />
+                <input type="email" id="newsletter-email" placeholder="nama@semesta.com" data-i18n-ph="newsletter_ph" required aria-label="Alamat Email" />
                 <button type="submit" class="btn-primary-glow">
-                  <span>Berlangganan</span>
+                  <span data-i18n="newsletter_btn">Berlangganan</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                 </button>
               </div>
-              <p class="form-notice">Bebas spam. Berhenti berlangganan kapan pun dengan sekali klik.</p>
+              <p class="form-notice" data-i18n="newsletter_notice">Bebas spam. Berhenti berlangganan kapan pun dengan sekali klik.</p>
             </form>
           </div>
         </section>
@@ -349,18 +351,18 @@
               <img src="/assets/libroverse-logo.jpg" alt="Logo Libroverse" class="footer-logo-img" />
               <span class="footer-brand-title">Libroverse</span>
             </div>
-            <p class="footer-tagline">
+            <p class="footer-tagline" data-i18n="footer_tagline">
               Perpustakaan digital lintas galaksi. Membuka akses buku berkualitas untuk semua insan di muka bumi dan sekitarnya.
             </p>
             <div class="footer-status-pill">
               <span class="status-dot"></span>
-              <span>Semua Sistem Kosmik Online di Vercel</span>
+              <span data-i18n="footer_status">Semua Sistem Kosmik Online di Vercel</span>
             </div>
           </div>
 
           <div class="footer-nav-groups">
             <div class="footer-col">
-              <h3 class="footer-heading">Navigasi Pustaka</h3>
+              <h3 class="footer-heading" data-i18n="footer_col_nav">Navigasi Pustaka</h3>
               <a href="#hero">Beranda</a>
               <a href="#katalog">Katalog Buku</a>
               <a href="#katalog" data-format-link="audio">Audiobook</a>
@@ -369,7 +371,7 @@
             </div>
 
             <div class="footer-col">
-              <h3 class="footer-heading">Format File</h3>
+              <h3 class="footer-heading" data-i18n="footer_col_format">Format File</h3>
               <span>EPUB (E-Reader & Ponsel)</span>
               <span>PDF Bersih & Cetak</span>
               <span>Streaming Audio Naratif</span>
@@ -377,7 +379,7 @@
             </div>
 
             <div class="footer-col">
-              <h3 class="footer-heading">Kebijakan & Lisensi</h3>
+              <h3 class="footer-heading" data-i18n="footer_col_license">Kebijakan & Lisensi</h3>
               <span>Domain Publik</span>
               <span>Creative Commons</span>
               <span>Bebas Royalti</span>
@@ -387,7 +389,7 @@
         </div>
 
         <div class="footer-bottom">
-          <p>© 2026 Libroverse. Dirancang dengan cinta kosmik untuk pembaca semesta.</p>
+          <p data-i18n="footer_copyright">© 2026 Libroverse. Dirancang dengan cinta kosmik untuk pembaca semesta.</p>
           <div class="footer-badges">
             <span class="tech-badge">⚡ Vite Powered</span>
             <span class="tech-badge">🚀 Vercel Ready</span>
@@ -411,7 +413,7 @@
             <div class="reader-controls">
               <!-- Table of Contents Toggle -->
               <button type="button" class="reader-btn" id="reader-toc-btn" title="Buka Daftar Isi & Bab Lengkap" aria-label="Daftar Isi">
-                <span>📑 Daftar Isi</span>
+                <span data-i18n="reader_toc">📑 Daftar Isi</span>
               </button>
 
               <!-- Reading Mode Toggle (Halaman vs Gulir) -->
@@ -456,12 +458,12 @@
             <div class="reader-progress-fill" id="reader-progress-bar" style="width: 0%"></div>
           </div>
 
-          <!-- Reader Main Display Area -->
+          <!-- Reader Content Layout -->
           <div class="reader-content-layout">
             <!-- Slide-out Table of Contents Drawer -->
             <div class="reader-toc-drawer" id="reader-toc-drawer" hidden>
               <div class="reader-toc-header">
-                <h4>📑 Daftar Isi & Bab</h4>
+                <h4 data-i18n="reader_toc_header">📑 Daftar Isi & Bab</h4>
                 <button type="button" class="reader-btn" id="reader-toc-close-btn" aria-label="Tutup Daftar Isi">✕</button>
               </div>
               <div class="reader-toc-list" id="reader-toc-list">
@@ -479,17 +481,17 @@
           <div class="reader-footer">
             <button type="button" class="reader-nav-btn" id="reader-prev-chapter" disabled>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-              <span id="reader-prev-btn-text">Sebelumnya</span>
+              <span id="reader-prev-btn-text" data-i18n="reader_prev">Sebelumnya</span>
             </button>
             <div class="reader-page-info">
               <span id="reader-page-counter">Halaman 1 dari 1</span>
               <div class="reader-jump-box">
-                <span class="jump-label">Lompat:</span>
+                <span class="jump-label" data-i18n="reader_jump">Lompat:</span>
                 <input type="number" id="reader-jump-input" min="1" max="1" value="1" title="Ketik nomor halaman lalu tekan Enter" />
               </div>
             </div>
             <button type="button" class="reader-nav-btn" id="reader-next-chapter">
-              <span id="reader-next-btn-text">Berikutnya</span>
+              <span id="reader-next-btn-text" data-i18n="reader_next">Berikutnya</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
             </button>
           </div>
@@ -571,7 +573,7 @@
         <div class="shelf-header">
           <div class="shelf-header-title">
             <span class="shelf-icon">🪐</span>
-            <h2 id="shelf-title" class="shelf-heading">Rak Kosmik Saya</h2>
+            <h2 id="shelf-title" class="shelf-heading" data-i18n="shelf_title">Rak Kosmik Saya</h2>
           </div>
           <button type="button" class="shelf-close-btn" id="shelf-close-btn" aria-label="Tutup Rak Kosmik">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -580,9 +582,9 @@
 
         <!-- Shelf Tabs -->
         <div class="shelf-tabs">
-          <button type="button" class="shelf-tab-btn active" data-tab="all">Semua Buku (<span id="shelf-tab-count">0</span>)</button>
-          <button type="button" class="shelf-tab-btn" data-tab="reading">Sedang Dibaca</button>
-          <button type="button" class="shelf-tab-btn" data-tab="finished">Selesai</button>
+          <button type="button" class="shelf-tab-btn active" data-tab="all"><span data-i18n="shelf_all">Semua Buku</span> (<span id="shelf-tab-count">0</span>)</button>
+          <button type="button" class="shelf-tab-btn" data-tab="reading" data-i18n="shelf_reading">Sedang Dibaca</button>
+          <button type="button" class="shelf-tab-btn" data-tab="finished" data-i18n="shelf_finished">Selesai</button>
         </div>
 
         <!-- Shelf Items List -->
@@ -592,8 +594,8 @@
 
         <!-- Shelf Footer -->
         <div class="shelf-footer">
-          <button type="button" class="shelf-clear-btn" id="shelf-clear-all-btn">Kosongkan Rak</button>
-          <button type="button" class="btn-primary-glow" id="shelf-browse-more-btn">Tambah Buku Baru</button>
+          <button type="button" class="shelf-clear-btn" id="shelf-clear-all-btn" data-i18n="shelf_clear">Kosongkan Rak</button>
+          <button type="button" class="btn-primary-glow" id="shelf-browse-more-btn" data-i18n="shelf_browse">Tambah Buku Baru</button>
         </div>
       </aside>
 
@@ -632,7 +634,7 @@
               </blockquote>
 
               <div class="detail-synopsis-box">
-                <h4 class="synopsis-title">Sinopsis Semesta</h4>
+                <h4 class="synopsis-title" data-i18n="synopsis_title">Sinopsis Semesta</h4>
                 <p class="synopsis-text" id="detail-synopsis-text"></p>
               </div>
 
@@ -640,21 +642,21 @@
               <div class="detail-action-buttons">
                 <button type="button" class="btn-primary-glow btn-lg" id="detail-read-btn">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                  <span>Baca Sekarang</span>
+                  <span data-i18n="detail_read">Baca Sekarang</span>
                 </button>
                 <button type="button" class="btn-secondary-glass btn-lg" id="detail-listen-btn">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span>Dengarkan Audiobook</span>
+                  <span data-i18n="detail_listen">Dengarkan Audiobook</span>
                 </button>
                 <button type="button" class="btn-shelf-action" id="detail-toggle-shelf-btn">
                   <span id="detail-shelf-icon">🔖</span>
-                  <span id="detail-shelf-label">Simpan ke Rak</span>
+                  <span id="detail-shelf-label" data-i18n="detail_save">Simpan ke Rak</span>
                 </button>
               </div>
 
               <!-- Download Options Dropdown / Row -->
               <div class="detail-download-row">
-                <span class="download-label">Unduh Gratis:</span>
+                <span class="download-label" data-i18n="download_label">Unduh Gratis:</span>
                 <button type="button" class="download-pill-btn" id="detail-download-epub" data-format="epub">
                   <span>⬇ EPUB (E-Reader)</span>
                 </button>
@@ -676,7 +678,7 @@
           <div class="upload-modal-header">
             <div class="upload-modal-title-row">
               <span class="upload-icon">📤</span>
-              <h2 id="upload-modal-title" class="upload-heading">Upload Your EPUB / PDF Book</h2>
+              <h2 id="upload-modal-title" class="upload-heading" data-i18n="upload_modal_title">Upload Your EPUB / PDF Book</h2>
             </div>
             <button type="button" class="modal-close-corner-btn" id="upload-modal-close" aria-label="Tutup Modal Upload">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -687,10 +689,10 @@
             <input type="file" id="book-file-input" accept=".epub,.pdf,.txt" class="sr-only" />
             <div class="dropzone-content">
               <div class="dropzone-icon">📚</div>
-              <h3 class="dropzone-title">Drag & drop your EPUB, PDF or TXT file here</h3>
-              <p class="dropzone-sub">or click to browse files from your computer or phone</p>
+              <h3 class="dropzone-title" data-i18n="dropzone_title">Drag & drop your EPUB, PDF or TXT file here</h3>
+              <p class="dropzone-sub" data-i18n="dropzone_sub">or click to browse files from your computer or phone</p>
               <button type="button" class="btn-primary-glow" id="dropzone-browse-btn">
-                <span>Browse File...</span>
+                <span data-i18n="browse_files">Browse File...</span>
               </button>
               <span class="dropzone-badge">Instant In-Browser EPUB Parser Powered by JSZip</span>
             </div>
@@ -715,15 +717,15 @@
             <!-- Optional Metadata Editing -->
             <div class="upload-edit-form">
               <div class="upload-field-row">
-                <label for="upload-input-title" class="upload-field-label">Judul Buku (Title):</label>
+                <label for="upload-input-title" class="upload-field-label" data-i18n="upload_label_title">Judul Buku (Title):</label>
                 <input type="text" id="upload-input-title" class="upload-field-input" placeholder="Judul Buku" />
               </div>
               <div class="upload-field-row">
-                <label for="upload-input-author" class="upload-field-label">Penulis / Pengarang (Author):</label>
+                <label for="upload-input-author" class="upload-field-label" data-i18n="upload_label_author">Penulis / Pengarang (Author):</label>
                 <input type="text" id="upload-input-author" class="upload-field-input" placeholder="Nama Penulis" />
               </div>
               <div class="upload-field-row">
-                <label for="upload-input-genre" class="upload-field-label">Kategori / Rak:</label>
+                <label for="upload-input-genre" class="upload-field-label" data-i18n="upload_label_genre">Kategori / Rak:</label>
                 <select id="upload-input-genre" class="upload-field-input">
                   <option value="Koleksi Pribadi">Koleksi Pribadi (Personal)</option>
                   <option value="Klasik Dunia">Klasik Dunia (World Classics)</option>
@@ -738,10 +740,10 @@
 
             <div class="preview-actions">
               <button type="button" class="btn-primary-glow" id="preview-read-now-btn">
-                <span>📖 Baca Sekarang</span>
+                <span data-i18n="upload_read_btn">📖 Baca Sekarang</span>
               </button>
               <button type="button" class="btn-secondary-glass" id="preview-save-shelf-btn">
-                <span>💾 Simpan ke Koleksi Saya</span>
+                <span data-i18n="upload_save_btn">💾 Simpan ke Koleksi Saya</span>
               </button>
             </div>
           </div>

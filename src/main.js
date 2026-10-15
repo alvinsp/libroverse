@@ -11,7 +11,7 @@ const state = {
   activeFormat: 'all',
   searchQuery: '',
   sortBy: 'popular',
-  currentLang: 'id',
+  currentLang: localStorage.getItem('libroverse_lang') || 'id',
 
   // Reader State
   currentReadingBook: null,
@@ -44,6 +44,289 @@ const state = {
   selectedBook: null,
   deferredPwaPrompt: null
 };
+
+// ==========================================================================
+// INTERNATIONALIZATION (i18n) DICTIONARY & MULTI-LANGUAGE SYSTEM
+// ==========================================================================
+const I18N_DICT = {
+  id: {
+    lang_name: 'Bahasa Indonesia',
+    search_placeholder: "Cari judul, penulis, rasi genre... (Tekan '/' untuk cari)",
+    ambient_music: 'Musik Kosmik',
+    ambient_music_title: 'Nyalakan Musik Semesta Santai',
+    upload_btn: 'Upload EPUB/PDF',
+    shelf_btn: 'Rak Kosmik',
+    install_app: 'Pasang App',
+    hero_badge: 'Gerbang Literasi Bebas Tanpa Batas',
+    hero_badge_pill: 'Gratis Selamanya',
+    hero_title: 'Jelajahi Semesta Buku di <br /><span class="gradient-text">Libroverse</span>',
+    hero_subtitle: 'Temukan ribuan karya sastra dunia, fiksi ilmiah antariksa, cerita nusantara, dan audiobook memukau. Baca daring langsung di peramban atau unduh file bersih <strong>EPUB & PDF</strong> kapan saja.',
+    hero_prompt_placeholder: 'Ketik alur cerita yang kamu bayangkan, suasana hati, atau tokoh impian...',
+    explore_btn: 'Jelajahi',
+    inspiration_label: 'Inspirasi Galaksi:',
+    hero_upload_action: '📤 Upload Koleksi Buku Saya (EPUB / PDF)',
+    stat_books: 'Buku Digital Gratis',
+    stat_audio: 'Audiobook Bersuara',
+    stat_lang: 'Bahasa Dunia',
+    stat_legal: 'Domain Publik & Legal',
+    spotlight_badge: '★ Sorotan Bintang Hari Ini',
+    read_sample: 'Baca Cuplikan',
+    play_audio: 'Putar Audio',
+    catalogue_kicker: '✦ Rasi Bintang Pustaka',
+    catalogue_title: 'Jelajahi Koleksi Semesta',
+    format_all: 'Semua Format',
+    format_epub: '📖 EPUB',
+    format_pdf: '📄 PDF',
+    format_audio: '🎧 Audiobook',
+    sort_popular: 'Paling Populer',
+    sort_rating: 'Rating Tertinggi',
+    sort_newest: 'Buku Terbaru',
+    sort_pages: 'Halaman Terpanjang',
+    results_showing: 'Menampilkan {n} buku kosmik',
+    empty_title: 'Tidak ada bintang di koordinat ini',
+    empty_text: 'Coba ubah kata kunci pencarian atau reset filter genre untuk menemukan buku lainnya.',
+    reset_filters: 'Reset Semua Filter',
+    curated_badge: '🌴 Mahakarya Nusantara',
+    curated_title: 'Warisan Sastra & Cerita Kepulauan Langit',
+    curated_desc: 'Dari hikayat pelaut Nusantara yang membaca arah lewat rasi bintang pari, hingga fiksi spekulatif masa depan pulau-pulau melayang. Nikmati karya sastra Indonesia pilihan dengan narasi suara berkualitas studio.',
+    curated_btn: 'Telusuri Koleksi Nusantara',
+    newsletter_title: 'Dapatkan Kiriman Bintang Buku Baru',
+    newsletter_desc: 'Satu surat semesta setiap minggu berisi rekomendasi buku gratis terbaik, ulasan astronomis, dan rilis audiobook terbaru langsung ke kotak masukmu.',
+    newsletter_btn: 'Berlangganan',
+    newsletter_ph: 'Ketik alamat email kosmikmu...',
+    newsletter_notice: 'Bebas spam. Berhenti berlangganan kapan pun dengan sekali klik.',
+    footer_tagline: 'Perpustakaan digital lintas galaksi. Membuka akses buku berkualitas untuk semua insan di muka bumi dan sekitarnya.',
+    footer_status: 'Semua Sistem Kosmik Online di Vercel',
+    footer_col_nav: 'Navigasi Pustaka',
+    footer_col_format: 'Format File',
+    footer_col_license: 'Kebijakan & Lisensi',
+    footer_copyright: '© 2026 Libroverse. Dirancang dengan cinta kosmik untuk pembaca semesta.',
+    reader_toc: '📑 Daftar Isi',
+    reader_toc_header: '📑 Daftar Isi & Bab',
+    reader_mode_pages: '📖 Halaman',
+    reader_mode_scroll: '📜 Mode Gulir',
+    reader_prev: 'Sebelumnya',
+    reader_next: 'Berikutnya',
+    reader_jump: 'Lompat:',
+    reader_chapter_prev: '← Bab Sebelumnya',
+    reader_chapter_next: 'Bab Berikutnya →',
+    reader_completed: 'selesai',
+    reader_chapter_of: 'Bab {cur} dari {total}',
+    shelf_title: 'Rak Kosmik Saya',
+    shelf_all: 'Semua Buku',
+    shelf_reading: 'Sedang Dibaca',
+    shelf_finished: 'Selesai',
+    shelf_clear: 'Kosongkan Rak',
+    shelf_browse: 'Tambah Buku Baru',
+    detail_read: 'Baca Sekarang',
+    detail_listen: 'Dengarkan Audiobook',
+    detail_save: 'Simpan ke Rak',
+    detail_saved: 'Tersimpan di Rak',
+    synopsis_title: 'Sinopsis Semesta',
+    download_label: 'Unduh Gratis:',
+    upload_modal_title: 'Upload Buku EPUB / PDF / TXT',
+    dropzone_title: 'Seret & lepas berkas buku ke sini',
+    dropzone_sub: 'Mendukung format EPUB, PDF, dan TXT (Maks. 50 MB)',
+    browse_files: 'Pilih Berkas dari Perangkat',
+    upload_label_title: 'Judul Buku (Title):',
+    upload_label_author: 'Penulis (Author):',
+    upload_label_genre: 'Kategori / Rak:',
+    upload_save_btn: '💾 Simpan ke Koleksi Saya',
+    upload_read_btn: '📖 Baca Sekarang',
+    card_read: 'Baca Online',
+    card_audio: 'Audio',
+    card_download: 'Unduh',
+    card_save: 'Simpan',
+    card_saved: 'Tersimpan',
+    audio_playing: 'Memutar narasi kosmik "{title}"',
+    toast_lang_changed: 'Bahasa diganti ke {lang}'
+  },
+  en: {
+    lang_name: 'English',
+    search_placeholder: "Search titles, authors, genres... (Press '/' to search)",
+    ambient_music: 'Cosmic Audio',
+    ambient_music_title: 'Play Relaxing Ambient Chimes',
+    upload_btn: 'Upload EPUB/PDF',
+    shelf_btn: 'My Bookshelf',
+    install_app: 'Install App',
+    hero_badge: 'Limitless Open Literature Gateway',
+    hero_badge_pill: 'Forever Free',
+    hero_title: 'Explore the Universe of Books on <br /><span class="gradient-text">Libroverse</span>',
+    hero_subtitle: 'Discover thousands of world classics, space science fiction, cultural lore, and narrated audiobooks. Read directly in your browser or download clean <strong>EPUB & PDF</strong> files anytime.',
+    hero_prompt_placeholder: 'Type a story plot you imagine, a mood, or a character archetype...',
+    explore_btn: 'Explore',
+    inspiration_label: 'Galaxy Inspiration:',
+    hero_upload_action: '📤 Upload My Personal Book (EPUB / PDF)',
+    stat_books: 'Free Digital Books',
+    stat_audio: 'Narrated Audiobooks',
+    stat_lang: 'World Languages',
+    stat_legal: 'Public Domain & Legal',
+    spotlight_badge: '★ Curator\'s Star Spotlight Today',
+    read_sample: 'Read Preview',
+    play_audio: 'Play Audio',
+    catalogue_kicker: '✦ Constellation Catalog',
+    catalogue_title: 'Explore the Universal Collection',
+    format_all: 'All Formats',
+    format_epub: '📖 EPUB',
+    format_pdf: '📄 PDF',
+    format_audio: '🎧 Audiobook',
+    sort_popular: 'Most Popular',
+    sort_rating: 'Highest Rated',
+    sort_newest: 'Newest Arrivals',
+    sort_pages: 'Most Pages',
+    results_showing: 'Showing {n} cosmic books',
+    empty_title: 'No stars found at these coordinates',
+    empty_text: 'Try changing your search keywords or resetting genre filters to find more books.',
+    reset_filters: 'Reset All Filters',
+    curated_badge: '🌴 Indonesian Literature Masterpiece',
+    curated_title: 'Maritime Heritage & Sky Island Tales',
+    curated_desc: 'From ancient maritime epics navigating by the Southern Cross, to speculative fiction of floating islands. Enjoy curated Indonesian literature with studio-quality audio narration.',
+    curated_btn: 'Browse Nusantara Collection',
+    newsletter_title: 'Get New Book Deliveries in Orbit',
+    newsletter_desc: 'One cosmic dispatch every week with the finest free book recommendations, literary reviews, and audiobook releases sent directly to your inbox.',
+    newsletter_btn: 'Subscribe',
+    newsletter_ph: 'Enter your stellar email address...',
+    newsletter_notice: 'Zero spam. Unsubscribe at any time with a single click.',
+    footer_tagline: 'An intergalactic digital library. Opening free access to inspiring literature for all curious minds across the universe.',
+    footer_status: 'All Cosmic Systems Online on Vercel',
+    footer_col_nav: 'Library Navigation',
+    footer_col_format: 'File Formats',
+    footer_col_license: 'Policy & Licenses',
+    footer_copyright: '© 2026 Libroverse. Crafted with cosmic love for stargazing readers everywhere.',
+    reader_toc: '📑 Table of Contents',
+    reader_toc_header: '📑 Table of Contents & Chapters',
+    reader_mode_pages: '📖 Pages',
+    reader_mode_scroll: '📜 Scroll Mode',
+    reader_prev: 'Previous',
+    reader_next: 'Next',
+    reader_jump: 'Jump:',
+    reader_chapter_prev: '← Previous Chapter',
+    reader_chapter_next: 'Next Chapter →',
+    reader_completed: 'completed',
+    reader_chapter_of: 'Chapter {cur} of {total}',
+    shelf_title: 'My Cosmic Bookshelf',
+    shelf_all: 'All Books',
+    shelf_reading: 'Currently Reading',
+    shelf_finished: 'Finished',
+    shelf_clear: 'Clear Shelf',
+    shelf_browse: 'Add New Books',
+    detail_read: 'Read Now',
+    detail_listen: 'Listen to Audiobook',
+    detail_save: 'Save to Shelf',
+    detail_saved: 'Saved in Shelf',
+    synopsis_title: 'Universal Synopsis',
+    download_label: 'Free Download:',
+    upload_modal_title: 'Upload EPUB / PDF / TXT Book',
+    dropzone_title: 'Drag & drop your book file here',
+    dropzone_sub: 'Supports EPUB, PDF, and TXT formats (Max 50 MB)',
+    browse_files: 'Browse File from Device',
+    upload_label_title: 'Book Title:',
+    upload_label_author: 'Author / Creator:',
+    upload_label_genre: 'Category / Shelf:',
+    upload_save_btn: '💾 Save to My Collection',
+    upload_read_btn: '📖 Read Now',
+    card_read: 'Read Online',
+    card_audio: 'Audio',
+    card_download: 'Download',
+    card_save: 'Save',
+    card_saved: 'Saved',
+    audio_playing: 'Playing cosmic narration "{title}"',
+    toast_lang_changed: 'Language switched to {lang}'
+  }
+};
+
+function t(key, params = {}) {
+  const lang = state.currentLang || 'id';
+  let str = I18N_DICT[lang]?.[key] || I18N_DICT.en?.[key] || I18N_DICT.id?.[key] || key;
+  Object.keys(params).forEach((k) => {
+    str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), params[k]);
+  });
+  return str;
+}
+
+function getTranslatedGenre(genre, lang = state.currentLang) {
+  if (!genre) return '';
+  if (lang !== 'en') return genre;
+  const genreMap = {
+    'Semua': 'All',
+    'Filsafat & Sains': 'Philosophy & Science',
+    'Klasik Dunia': 'World Classics',
+    'Sastra Indonesia': 'Indonesian Literature',
+    'Self Development': 'Self Development',
+    'Psikologi & Parenting': 'Psychology & Parenting',
+    'Sci-Fi & Antariksa': 'Sci-Fi & Space',
+    'Koleksi Pribadi': 'Personal Collection',
+    'Misteri & Thriller': 'Mystery & Thriller',
+    'Fantasi Epik': 'Epic Fantasy'
+  };
+  return genreMap[genre] || genre;
+}
+
+function applyLanguage(lang = 'id') {
+  if (!I18N_DICT[lang] && lang !== 'bn' && lang !== 'es' && lang !== 'jp') {
+    lang = 'id';
+  }
+  state.currentLang = lang;
+  localStorage.setItem('libroverse_lang', lang);
+  document.documentElement.lang = lang;
+
+  // Update switcher flag & label
+  const flagMap = { id: '🇮🇩', en: '🇬🇧', bn: '🇧🇩', es: '🇪🇸', jp: '🇯🇵' };
+  const flagEl = document.getElementById('current-lang-flag');
+  const codeEl = document.getElementById('current-lang-code');
+  if (flagEl) flagEl.textContent = flagMap[lang] || '🌐';
+  if (codeEl) codeEl.textContent = lang.toUpperCase();
+
+  document.querySelectorAll('.lang-option').forEach((opt) => {
+    opt.classList.toggle('active', opt.dataset.lang === lang);
+  });
+
+  // Update declarative data-i18n attributes in the DOM
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-html');
+    el.innerHTML = t(key);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-ph');
+    el.setAttribute('placeholder', t(key));
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-title');
+    el.setAttribute('title', t(key));
+  });
+
+  // Update Sort select option labels
+  const sortSelect = document.getElementById('sort-select');
+  if (sortSelect) {
+    const sortKeys = ['popular', 'rating', 'newest', 'pages'];
+    sortKeys.forEach((k) => {
+      const opt = sortSelect.querySelector(`option[value="${k}"]`);
+      if (opt) opt.textContent = t(`sort_${k}`);
+    });
+  }
+
+  // Re-render dynamic sections with new language
+  renderGenrePills();
+  filterAndRenderBooks();
+
+  // Update reader labels if open
+  updateReaderLabels();
+}
+
+function updateReaderLabels() {
+  const modeLabel = document.getElementById('reader-mode-label');
+  if (modeLabel) {
+    modeLabel.textContent = state.readerMode === 'scroll' ? t('reader_mode_scroll') : t('reader_mode_pages');
+  }
+  const prevText = document.getElementById('reader-prev-btn-text');
+  if (prevText) prevText.textContent = t('reader_prev');
+  const nextText = document.getElementById('reader-next-btn-text');
+  if (nextText) nextText.textContent = t('reader_next');
+}
 
 // ==========================================================================
 // COSMIC BACKGROUND STARFIELD CANVAS ANIMATION
@@ -266,7 +549,7 @@ function renderGenrePills() {
       data-genre="${g.id}"
       role="tab"
       aria-selected="${state.activeGenre === g.id}">
-      ${g.label}
+      ${getTranslatedGenre(g.label)}
     </button>
   `
   ).join('');
@@ -319,9 +602,9 @@ function filterAndRenderBooks() {
 
   state.filteredBooks = list;
 
-  // Update counts
+  // Update counts with translation
   const countEl = document.getElementById('results-count-text');
-  if (countEl) countEl.textContent = `Menampilkan ${list.length} buku kosmik`;
+  if (countEl) countEl.textContent = t('results_showing', { n: list.length });
 
   // Render Grid
   const grid = document.getElementById('books-grid');
@@ -360,7 +643,7 @@ function renderBookCardHTML(book) {
     .join('');
 
   const badgeHTML = book.isUserUploaded
-    ? `<span class="card-badge personal-badge">Koleksi Pribadi</span>`
+    ? `<span class="card-badge personal-badge">${state.currentLang === 'en' ? 'Personal Book' : 'Koleksi Pribadi'}</span>`
     : (book.badge ? `<span class="card-badge">${book.badge}</span>` : '');
 
   const subtitleHTML = book.subtitle ? `<p class="card-subtitle">${book.subtitle}</p>` : '';
@@ -381,7 +664,7 @@ function renderBookCardHTML(book) {
 
       <div class="card-info">
         <div class="card-genre-row">
-          <span class="card-genre">${book.genre}</span>
+          <span class="card-genre">${getTranslatedGenre(book.genre)}</span>
           <div class="card-formats">${formatsHTML}</div>
         </div>
 
@@ -399,12 +682,12 @@ function renderBookCardHTML(book) {
       <div class="card-actions-row">
         <button type="button" class="card-read-primary-btn" data-action="read" data-id="${book.id}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          <span>Baca Online</span>
+          <span>${t('card_read')}</span>
         </button>
 
         <button type="button" class="card-dl-secondary-btn" data-action="download" data-id="${book.id}" title="Download Buku EPUB/PDF">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Unduh</span>
+          <span>${t('card_download')}</span>
         </button>
 
         <button 
@@ -412,7 +695,7 @@ function renderBookCardHTML(book) {
           class="card-action-icon-btn ${isInShelf ? 'in-shelf' : ''}" 
           data-action="toggle-shelf" 
           data-id="${book.id}"
-          title="${isInShelf ? 'Hapus dari Rak Kosmik' : 'Simpan ke Rak Kosmik'}">
+          title="${isInShelf ? (state.currentLang === 'en' ? 'Remove from Shelf' : 'Hapus dari Rak Kosmik') : (state.currentLang === 'en' ? 'Save to Shelf' : 'Simpan ke Rak Kosmik')}">
           ${isInShelf ? '★' : '☆'}
         </button>
 
@@ -639,7 +922,51 @@ function buildBookPages(book) {
     return book.pagesList;
   }
 
-  const chapters = book.chapters || [];
+  // Smart splitting pass: Check if chapters contain sub-sections matching the book's Table of Contents or headings
+  const initialChapters = book.chapters || [];
+  const expandedChapters = [];
+
+  // Gather known TOC titles from book
+  const knownTocTitles = [];
+  initialChapters.forEach((c) => {
+    if (c.title) knownTocTitles.push(c.title);
+  });
+  // Check if any chapter is a Table of Contents ("Contents" / "Daftar Isi")
+  initialChapters.forEach((c) => {
+    if (/(?:contents|table of contents|daftar isi)/i.test(c.title || '')) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(c.content || '', 'text/html');
+      doc.querySelectorAll('li, a, p').forEach((el) => {
+        const t = el.textContent.trim();
+        if (t.length >= 3 && t.length <= 120 && !knownTocTitles.includes(t)) {
+          knownTocTitles.push(t);
+        }
+      });
+    }
+  });
+
+  initialChapters.forEach((ch, idx) => {
+    if (ch.isHtml) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(ch.content || '', 'text/html');
+      const splits = splitHtmlByTocOrHeadings(doc, knownTocTitles);
+      if (splits && splits.length > 1) {
+        splits.forEach((s) => expandedChapters.push(s));
+      } else {
+        expandedChapters.push(ch);
+      }
+    } else {
+      const splits = parseTextIntoChapters(ch.content, ch.title || `Bab ${idx + 1}`);
+      if (splits && splits.length > 1) {
+        splits.forEach((s) => expandedChapters.push(s));
+      } else {
+        expandedChapters.push(ch);
+      }
+    }
+  });
+
+  book.chapters = expandedChapters;
+  const chapters = expandedChapters;
   const pagesList = [];
   const toc = [];
 
@@ -677,9 +1004,9 @@ function buildBookPages(book) {
     }
 
     const isMajorPart =
-      /^(part|bagian|book|jilid|volume|act|bab\s+\d+|introduction|dedication|foreword|prologue|epilogue|appendix|appendices|about\s+the\s+author)/i.test(
+      /^(part|bagian|book|jilid|volume|act|bab\s+\d+|chapter\s+\d+|introduction|dedication|foreword|prologue|epilogue|appendix|appendices|about\s+the\s+author)/i.test(
         chTitle.trim()
-      ) || !chTitle.includes(':');
+      );
     const depth = isMajorPart ? 1 : 2;
 
     chPages.forEach((pageHtml, pIdx) => {
@@ -858,11 +1185,20 @@ function openReaderModal(book, targetPageIndex = 0) {
     if (state.readerMode === 'scroll') {
       // Continuous Scroll Mode: Show full current chapter in clean paper canvas
       const ch = book.chapters?.[currentChapterIdx] || { title: chapterTitle, content: pageItem?.contentHtml || '' };
+      const isEn = state.currentLang === 'en';
+      const nextCh = book.chapters?.[currentChapterIdx + 1];
+      const nextBtnLabel = nextCh
+        ? (isEn ? 'Next: ' : 'Bab Berikutnya: ') + escapeHtml(nextCh.title)
+        : (isEn ? 'Next Chapter' : 'Bab Berikutnya');
+      const prevBtnLabel = isEn ? 'Previous Chapter' : 'Bab Sebelumnya';
+      const readPctLabel = `${Math.round(progressPct)}% ${t('reader_completed')}`;
+      const readChapLabel = `${isEn ? 'Chapter' : 'Bab'} ${currentChapterIdx + 1} ${isEn ? 'of' : 'dari'} ${book.chapters?.length || 1}`;
+
       if (pageCounterEl) {
-        pageCounterEl.textContent = `Bab ${currentChapterIdx + 1} dari ${book.chapters?.length || 1} • Mode Gulir`;
+        pageCounterEl.textContent = `${readChapLabel} • ${isEn ? 'Scroll Mode' : 'Mode Gulir'}`;
       }
-      if (prevText) prevText.textContent = 'Bab Sebelumnya';
-      if (nextText) nextText.textContent = 'Bab Berikutnya';
+      if (prevText) prevText.textContent = isEn ? 'Previous' : 'Bab Sebelumnya';
+      if (nextText) nextText.textContent = isEn ? 'Next' : 'Bab Berikutnya';
       if (prevBtn) prevBtn.disabled = currentChapterIdx === 0;
       if (nextBtn) nextBtn.disabled = currentChapterIdx >= (book.chapters?.length || 1) - 1;
 
@@ -872,7 +1208,7 @@ function openReaderModal(book, targetPageIndex = 0) {
             <div class="reader-eyebrow">
               <span>${escapeHtml(book.title)}</span>
               <span aria-hidden="true">·</span>
-              <span>Bab ${currentChapterIdx + 1} dari ${book.chapters?.length || 1}</span>
+              <span>${readChapLabel}</span>
             </div>
             <h1 class="reader-h1">${escapeHtml(ch.title)}</h1>
             <div class="epub-rendered-content">
@@ -881,14 +1217,14 @@ function openReaderModal(book, targetPageIndex = 0) {
             <nav class="reader-turn-bar" aria-label="Navigasi bab pembaca">
               <button type="button" class="reader-turn-btn" data-turn="prev" ${currentChapterIdx === 0 ? 'disabled' : ''}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>
-                <span>Bab Sebelumnya</span>
+                <span>${prevBtnLabel}</span>
               </button>
               <div class="reader-turn-read-meta">
-                <span class="read-pct-badge">${Math.round(progressPct)}% selesai</span>
-                <span class="read-chap-indicator">Bab ${currentChapterIdx + 1} dari ${book.chapters?.length || 1}</span>
+                <span class="read-pct-badge">${readPctLabel}</span>
+                <span class="read-chap-indicator">${readChapLabel}</span>
               </div>
               <button type="button" class="reader-turn-btn reader-turn-btn--primary" data-turn="next" ${currentChapterIdx >= (book.chapters?.length || 1) - 1 ? 'disabled' : ''}>
-                <span>Bab Berikutnya</span>
+                <span>${nextBtnLabel}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg>
               </button>
             </nav>
@@ -903,11 +1239,21 @@ function openReaderModal(book, targetPageIndex = 0) {
       }
     } else {
       // Clean Page-By-Page Reading Mode in Paper Canvas
+      const isEn = state.currentLang === 'en';
+      const readPageLabel = `${isEn ? 'Page' : 'Halaman'} ${clampedIndex + 1} ${isEn ? 'of' : 'dari'} ${totalPages}`;
+      const prevPageLabel = isEn ? 'Previous Page' : 'Halaman Sebelumnya';
+      const isLastPageOfChapter = pageItem && pageItem.pageInChapter === pageItem.totalInChapter;
+      const nextCh = book.chapters?.[currentChapterIdx + 1];
+      const nextPageLabel = isLastPageOfChapter && nextCh
+        ? (isEn ? 'Next: ' : 'Bab Berikutnya: ') + escapeHtml(nextCh.title)
+        : (isEn ? 'Next Page' : 'Halaman Berikutnya');
+      const readPctLabel = `${Math.round(progressPct)}% ${t('reader_completed')}`;
+
       if (pageCounterEl) {
-        pageCounterEl.textContent = `Halaman ${clampedIndex + 1} dari ${totalPages} • ${chapterTitle}`;
+        pageCounterEl.textContent = `${readPageLabel} • ${chapterTitle}`;
       }
-      if (prevText) prevText.textContent = 'Sebelumnya';
-      if (nextText) nextText.textContent = 'Berikutnya';
+      if (prevText) prevText.textContent = t('reader_prev');
+      if (nextText) nextText.textContent = t('reader_next');
       if (prevBtn) prevBtn.disabled = clampedIndex === 0;
       if (nextBtn) nextBtn.disabled = clampedIndex >= totalPages - 1;
 
@@ -917,7 +1263,7 @@ function openReaderModal(book, targetPageIndex = 0) {
             <div class="reader-eyebrow">
               <span>${escapeHtml(book.title)}</span>
               <span aria-hidden="true">·</span>
-              <span>Halaman ${clampedIndex + 1} dari ${totalPages}</span>
+              <span>${readPageLabel}</span>
             </div>
             <h1 class="reader-h1">${escapeHtml(pageItem.chapterTitle)}</h1>
             <div class="epub-rendered-content reader-page-content">
@@ -926,14 +1272,14 @@ function openReaderModal(book, targetPageIndex = 0) {
             <nav class="reader-turn-bar" aria-label="Navigasi halaman pembaca">
               <button type="button" class="reader-turn-btn" data-turn="prev" ${clampedIndex === 0 ? 'disabled' : ''}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>
-                <span>Halaman Sebelumnya</span>
+                <span>${prevPageLabel}</span>
               </button>
               <div class="reader-turn-read-meta">
-                <span class="read-pct-badge">${Math.round(progressPct)}% selesai</span>
-                <span class="read-chap-indicator">Hal. ${clampedIndex + 1} dari ${totalPages}</span>
+                <span class="read-pct-badge">${readPctLabel}</span>
+                <span class="read-chap-indicator">${isEn ? 'Page' : 'Hal.'} ${clampedIndex + 1}/${totalPages}</span>
               </div>
               <button type="button" class="reader-turn-btn reader-turn-btn--primary" data-turn="next" ${clampedIndex >= totalPages - 1 ? 'disabled' : ''}>
-                <span>Halaman Berikutnya</span>
+                <span>${nextPageLabel}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg>
               </button>
             </nav>
@@ -1335,11 +1681,12 @@ function openBookDetailModal(book) {
 
   if (!modal || !book) return;
 
+  const isEn = state.currentLang === 'en';
   title.textContent = book.title;
-  author.textContent = `oleh ${book.author}`;
-  genre.textContent = book.genre;
-  rating.textContent = `★ ${book.rating} (${book.reviewsCount} ulasan)`;
-  pages.textContent = `${book.pages} Halaman`;
+  author.textContent = `${isEn ? 'by' : 'oleh'} ${book.author}`;
+  genre.textContent = getTranslatedGenre(book.genre);
+  rating.textContent = `★ ${book.rating} (${book.reviewsCount} ${isEn ? 'reviews' : 'ulasan'})`;
+  pages.textContent = `${book.pages} ${isEn ? 'Pages' : 'Halaman'}`;
   readtime.textContent = book.readingTime;
   quote.textContent = `"${book.quote || book.synopsis.slice(0, 120)}..."`;
   synopsis.textContent = book.synopsis;
@@ -1363,7 +1710,7 @@ function openBookDetailModal(book) {
     .join('');
 
   const isInShelf = state.shelf.some((i) => i.id === book.id);
-  if (shelfLabel) shelfLabel.textContent = isInShelf ? 'Hapus dari Rak' : 'Simpan ke Rak';
+  if (shelfLabel) shelfLabel.textContent = isInShelf ? (isEn ? 'Remove from Shelf' : 'Hapus dari Rak') : (isEn ? 'Save to Shelf' : 'Simpan ke Rak');
 
   modal.style.setProperty('display', 'flex', 'important');
   modal.classList.add('active');
@@ -1558,12 +1905,13 @@ function renderShelfDrawerList() {
     items = items.filter((i) => i.status === state.activeShelfTab);
   }
 
+  const isEn = state.currentLang === 'en';
   if (items.length === 0) {
     listEl.innerHTML = `
       <div class="shelf-empty-box">
         <span style="font-size: 2.5rem;">🌌</span>
-        <h4>Rak Kosmik masih kosong</h4>
-        <p style="font-size: 0.85rem;">Klik tombol bintang pada buku untuk menyimpannya ke rak baca pribadimu.</p>
+        <h4>${isEn ? 'Your bookshelf is empty' : 'Rak Kosmik masih kosong'}</h4>
+        <p style="font-size: 0.85rem;">${isEn ? 'Click the star button on any book to add it to your personal shelf.' : 'Klik tombol bintang pada buku untuk menyimpannya ke rak baca pribadimu.'}</p>
       </div>
     `;
     return;
@@ -1579,9 +1927,9 @@ function renderShelfDrawerList() {
           <h4 class="shelf-item-title">${item.title}</h4>
           <span class="shelf-item-author">${item.author}</span>
           <div class="shelf-item-actions">
-            <button type="button" class="shelf-item-btn" data-shelf-read="${item.id}">Baca</button>
-            <button type="button" class="shelf-item-btn" data-shelf-listen="${item.id}">Dengar</button>
-            <button type="button" class="shelf-item-remove-btn" data-shelf-remove="${item.id}">Hapus</button>
+            <button type="button" class="shelf-item-btn" data-shelf-read="${item.id}">${isEn ? 'Read' : 'Baca'}</button>
+            <button type="button" class="shelf-item-btn" data-shelf-listen="${item.id}">${isEn ? 'Listen' : 'Dengar'}</button>
+            <button type="button" class="shelf-item-remove-btn" data-shelf-remove="${item.id}">${isEn ? 'Remove' : 'Hapus'}</button>
           </div>
         </div>
       </div>
@@ -1909,6 +2257,268 @@ function blobToDataUrl(blob) {
 }
 
 // ==========================================================================
+// SMART CONTENT / TABLE OF CONTENTS (TOC) SPLITTING ENGINE
+// ==========================================================================
+function normalizeTitle(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .replace(/[^\w\s\d]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Splits an HTML document into multiple chapters if elements match entries from
+ * the book's Table of Contents ("Contents"), or denote distinct section headings.
+ * Matching text becomes the title of the next chapter.
+ */
+function splitHtmlByTocOrHeadings(chDoc, tocTitles = []) {
+  if (!chDoc || !chDoc.body) return null;
+
+  const normTocMap = new Map();
+  tocTitles.forEach((t) => {
+    const raw = t.trim();
+    const norm = normalizeTitle(raw);
+    if (norm.length >= 3) {
+      normTocMap.set(norm, raw);
+    }
+  });
+
+  // Unwrap single outer containers (e.g. body > section or body > div)
+  let root = chDoc.body;
+  while (
+    root.children.length === 1 &&
+    ['section', 'div', 'main', 'article'].includes(root.firstElementChild.tagName.toLowerCase())
+  ) {
+    root = root.firstElementChild;
+  }
+
+  const childNodes = Array.from(root.childNodes).filter((n) => {
+    return n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0);
+  });
+
+  if (childNodes.length === 0) return null;
+
+  const boundaryIndices = [];
+
+  childNodes.forEach((node, idx) => {
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const el = node;
+    const tag = el.tagName.toLowerCase();
+    const cleanText = el.textContent.trim();
+
+    // Check heading inside el or el itself
+    const headingEl = el.querySelector('h1, h2, h3, h4, [class*="title"], [class*="heading"]');
+    const targetText = headingEl ? headingEl.textContent.trim() : cleanText;
+    const norm = normalizeTitle(targetText);
+
+    let matchedTitle = null;
+
+    // 1. Direct or fuzzy match with known Table of Contents item ("content")
+    if (normTocMap.has(norm)) {
+      matchedTitle = normTocMap.get(norm);
+    } else {
+      for (const [nKey, origTitle] of normTocMap.entries()) {
+        if (norm.length >= 4 && nKey.length >= 4) {
+          if (norm === nKey || norm.startsWith(nKey) || nKey.startsWith(norm)) {
+            matchedTitle = origTitle;
+            break;
+          }
+        }
+      }
+    }
+
+    // 2. Fallback: Check explicit heading tags (h1, h2, h3)
+    if (!matchedTitle && (tag === 'h1' || tag === 'h2' || tag === 'h3' || headingEl)) {
+      if (targetText.length >= 3 && targetText.length <= 120) {
+        matchedTitle = targetText;
+      }
+    }
+
+    // 3. Fallback: Check standard chapter patterns in text
+    if (!matchedTitle && (tag.startsWith('h') || tag === 'p' || tag === 'div')) {
+      if (/^(part|bagian|book|jilid|chapter|bab|act|scene)\s+[\d\w]+/i.test(targetText) && targetText.length <= 120) {
+        matchedTitle = targetText;
+      }
+    }
+
+    if (matchedTitle) {
+      boundaryIndices.push({
+        index: idx,
+        title: matchedTitle,
+        element: el
+      });
+    }
+  });
+
+  if (boundaryIndices.length === 0) {
+    return null;
+  }
+
+  // If exactly 1 boundary at start, treat that boundary title as the chapter title
+  const firstBoundaryIdx = boundaryIndices[0].index;
+  if (boundaryIndices.length === 1 && firstBoundaryIdx === 0) {
+    return [{
+      title: boundaryIndices[0].title,
+      content: root.innerHTML,
+      isHtml: true
+    }];
+  }
+
+  const splitChapters = [];
+
+  // Content before first boundary (frontmatter, dedication, or intro)
+  if (firstBoundaryIdx > 0) {
+    const preContainer = document.createElement('div');
+    for (let i = 0; i < firstBoundaryIdx; i++) {
+      preContainer.appendChild(childNodes[i].cloneNode(true));
+    }
+    const preText = preContainer.textContent.trim();
+    if (preText.length > 20 || preContainer.querySelector('img')) {
+      splitChapters.push({
+        title: 'Halaman Pembuka',
+        content: preContainer.innerHTML,
+        isHtml: true
+      });
+    }
+  }
+
+  // Chapters from each boundary
+  for (let b = 0; b < boundaryIndices.length; b++) {
+    const curr = boundaryIndices[b];
+    const nextIdx = b < boundaryIndices.length - 1 ? boundaryIndices[b + 1].index : childNodes.length;
+
+    const chContainer = document.createElement('div');
+    for (let i = curr.index; i < nextIdx; i++) {
+      chContainer.appendChild(childNodes[i].cloneNode(true));
+    }
+
+    splitChapters.push({
+      title: curr.title,
+      content: chContainer.innerHTML,
+      isHtml: true
+    });
+  }
+
+  return splitChapters.length > 0 ? splitChapters : null;
+}
+
+/**
+ * Parses raw text into chapters by matching Table of Contents entries ("Contents")
+ * or standard chapter headers.
+ */
+function parseTextIntoChapters(text, defaultTitle = 'Bab') {
+  if (!text) return [{ title: defaultTitle, content: '', isHtml: false }];
+
+  const lines = text.split(/\r?\n/);
+  const tocTitles = [];
+
+  // 1. Look for a "Contents", "Table of Contents", or "Daftar Isi" block
+  let inToc = false;
+  let tocEndLine = -1;
+
+  for (let i = 0; i < Math.min(lines.length, 250); i++) {
+    const line = lines[i].trim();
+    if (!inToc) {
+      if (/^(contents|table of contents|daftar isi|isi buku)/i.test(line)) {
+        inToc = true;
+        continue;
+      }
+    } else {
+      if (line.length === 0) {
+        if (tocTitles.length > 2) {
+          tocEndLine = i;
+          break;
+        }
+      } else if (line.length > 2 && line.length < 100) {
+        const cleanT = line.replace(/^\d+[\.\)]\s*/, '').replace(/\.{2,}\s*\d+$/, '').trim();
+        if (cleanT.length >= 3) {
+          tocTitles.push(cleanT);
+        }
+      }
+    }
+  }
+
+  const normTocMap = new Map();
+  tocTitles.forEach((t) => {
+    const norm = normalizeTitle(t);
+    if (norm.length >= 3) normTocMap.set(norm, t);
+  });
+
+  const chapters = [];
+  let currentTitle = defaultTitle;
+  let currentLines = [];
+
+  const startLine = tocEndLine > 0 ? tocEndLine : 0;
+
+  for (let i = startLine; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    const norm = normalizeTitle(trimmed);
+
+    let isBoundary = false;
+    let matchedTitle = null;
+
+    if (normTocMap.has(norm)) {
+      isBoundary = true;
+      matchedTitle = normTocMap.get(norm);
+    } else if (trimmed.length > 2 && trimmed.length < 90) {
+      for (const [nKey, origTitle] of normTocMap.entries()) {
+        if (norm.length >= 5 && nKey.length >= 5 && (norm === nKey || norm.startsWith(nKey) || nKey.startsWith(norm))) {
+          isBoundary = true;
+          matchedTitle = origTitle;
+          break;
+        }
+      }
+      if (!isBoundary && /^(?:bab|chapter|part|bagian|act|scene)\s+[\d\w]+/i.test(trimmed)) {
+        isBoundary = true;
+        matchedTitle = trimmed;
+      }
+    }
+
+    if (isBoundary) {
+      if (currentLines.length > 0) {
+        chapters.push({
+          title: currentTitle,
+          content: currentLines.join('\n'),
+          isHtml: false
+        });
+      }
+      currentTitle = matchedTitle || trimmed;
+      currentLines = [];
+    } else {
+      currentLines.push(line);
+    }
+  }
+
+  if (currentLines.length > 0) {
+    chapters.push({
+      title: currentTitle,
+      content: currentLines.join('\n'),
+      isHtml: false
+    });
+  }
+
+  // Fallback pagination if entire file was unformatted wall of text
+  if (chapters.length <= 1 && lines.length > 250) {
+    const chunked = [];
+    const chunkSize = 200;
+    for (let i = 0; i < lines.length; i += chunkSize) {
+      const slice = lines.slice(i, i + chunkSize);
+      chunked.push({
+        title: `${defaultTitle} ${chunked.length + 1}`,
+        content: slice.join('\n'),
+        isHtml: false
+      });
+    }
+    return chunked;
+  }
+
+  return chapters.length > 0 ? chapters : [{ title: defaultTitle, content: text, isHtml: false }];
+}
+
+// ==========================================================================
 // IN-BROWSER EPUB PARSER (POWERED BY JSZip)
 // ==========================================================================
 async function parseEpubFile(file) {
@@ -2000,7 +2610,50 @@ async function parseEpubFile(file) {
     }
   }
 
-  // 5. Extract Chapters via Spine (without artificial limit)
+  // 5. Extract Table of Contents ("Contents") from NCX, EPUB 3 Navigation Document, or TOC Files
+  const tocTitles = [];
+  const ncxItem = manifestItems.find(
+    (it) => it.getAttribute('media-type') === 'application/x-dtbncx+xml' || (it.getAttribute('id') || '').toLowerCase().includes('ncx')
+  );
+  if (ncxItem) {
+    const ncxEntry = resolveZipEntry(zip, opfDir, ncxItem.getAttribute('href'));
+    if (ncxEntry) {
+      try {
+        const ncxXml = await ncxEntry.async('text');
+        const ncxDoc = parser.parseFromString(ncxXml, 'application/xml');
+        const labels = Array.from(ncxDoc.getElementsByTagName('text'));
+        labels.forEach((l) => {
+          const t = l.textContent?.trim();
+          if (t && t.length >= 2 && !tocTitles.includes(t)) tocTitles.push(t);
+        });
+      } catch (e) {
+        console.warn('NCX extraction error:', e);
+      }
+    }
+  }
+
+  // Also check EPUB 3 navigation item (properties="nav")
+  const navItem = manifestItems.find(
+    (it) => (it.getAttribute('properties') || '').includes('nav') || (it.getAttribute('id') || '').toLowerCase().includes('toc')
+  );
+  if (navItem) {
+    const navEntry = resolveZipEntry(zip, opfDir, navItem.getAttribute('href'));
+    if (navEntry) {
+      try {
+        const navHtml = await navEntry.async('text');
+        const navDoc = parser.parseFromString(navHtml, 'text/html');
+        const links = Array.from(navDoc.querySelectorAll('nav[epub\\:type="toc"] li, ol.toc li, ul.toc li, nav li a, .toc a, a'));
+        links.forEach((l) => {
+          const t = l.textContent?.trim();
+          if (t && t.length >= 2 && !tocTitles.includes(t)) tocTitles.push(t);
+        });
+      } catch (e) {
+        console.warn('Nav doc extraction error:', e);
+      }
+    }
+  }
+
+  // 6. Extract Chapters via Spine & Split by Table of Contents ("Contents")
   const itemrefs = Array.from(opfDoc.getElementsByTagName('itemref'));
   const chapters = [];
 
@@ -2035,17 +2688,23 @@ async function parseEpubFile(file) {
         }
       }
 
-      const heading =
-        chDoc.querySelector('h1, h2, h3, title')?.textContent?.trim() || `Bab ${chapters.length + 1}`;
-      const bodyText = chDoc.body ? chDoc.body.innerHTML : rawHtml;
-      const plainText = chDoc.body ? chDoc.body.textContent.trim() : '';
+      // Check if this document contains multiple sections matching the Table of Contents ("content")
+      const splitChapters = splitHtmlByTocOrHeadings(chDoc, tocTitles);
+      if (splitChapters && splitChapters.length > 0) {
+        splitChapters.forEach((sc) => chapters.push(sc));
+      } else {
+        const heading =
+          chDoc.querySelector('h1, h2, h3, title')?.textContent?.trim() || `Bab ${chapters.length + 1}`;
+        const bodyText = chDoc.body ? chDoc.body.innerHTML : rawHtml;
+        const plainText = chDoc.body ? chDoc.body.textContent.trim() : '';
 
-      if (plainText.length > 15 || chDoc.querySelector('img')) {
-        chapters.push({
-          title: heading,
-          content: bodyText,
-          isHtml: true
-        });
+        if (plainText.length > 15 || chDoc.querySelector('img')) {
+          chapters.push({
+            title: heading,
+            content: bodyText,
+            isHtml: true
+          });
+        }
       }
     } catch (chErr) {
       console.warn(`Error reading chapter item ${idref}:`, chErr);
@@ -2226,13 +2885,14 @@ function setupUploadModal() {
       } else if (isTxt) {
         const text = await file.text();
         const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        const parsedChapters = parseTextIntoChapters(text, cleanName);
         bookData = {
           title: cleanName,
           author: 'Teks Pribadi',
           language: 'id',
           description: text.slice(0, 200) + '...',
           coverDataUrl: null,
-          chapters: [{ title: 'Bab 1', content: text, isHtml: false }]
+          chapters: parsedChapters
         };
         buildBookPages(bookData);
       }
@@ -2386,8 +3046,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   closeShelfDrawer();
 
   initCosmicCanvas();
-  renderGenrePills();
-  filterAndRenderBooks();
+  applyLanguage(state.currentLang);
   updateShelfBadge();
 
   setupReaderControls();
@@ -2432,13 +3091,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelectorAll('.lang-option').forEach((opt) => {
     opt.addEventListener('click', () => {
-      state.currentLang = opt.dataset.lang;
-      document.getElementById('current-lang-code').textContent = opt.dataset.lang.toUpperCase();
-      document.getElementById('current-lang-flag').textContent = opt.querySelector('.flag').textContent;
-      document.querySelectorAll('.lang-option').forEach((o) => o.classList.remove('active'));
-      opt.classList.add('active');
-      langMenu.hidden = true;
-      showToast(`Bahasa diganti ke ${opt.textContent.trim()}`, '🌐');
+      const lang = opt.dataset.lang;
+      applyLanguage(lang);
+      if (langMenu) langMenu.hidden = true;
+      const langName = opt.textContent.trim();
+      showToast(t('toast_lang_changed', { lang: langName }), '🌐');
     });
   });
 
