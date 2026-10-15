@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import { resolveZipEntry, blobToDataUrl } from '../../utils/domUtils.js';
 import { splitHtmlByTocOrHeadings } from './tocSplitter.js';
+import { normalizeEpubChapter } from './epubNormalizer.js';
 import { buildBookPages } from './paginator.js';
 
 /**
@@ -178,15 +179,16 @@ export async function parseEpubFile(file) {
       if (splitChapters && splitChapters.length > 0) {
         splitChapters.forEach((sc) => chapters.push(sc));
       } else {
-        const heading =
+        const rawHeading =
           chDoc.querySelector('h1, h2, h3, title')?.textContent?.trim() || `Bab ${chapters.length + 1}`;
-        const bodyText = chDoc.body ? chDoc.body.innerHTML : rawHtml;
-        const plainText = chDoc.body ? chDoc.body.textContent.trim() : '';
+        const rawContent = chDoc.body ? chDoc.body.innerHTML : rawHtml;
+        const normalized = normalizeEpubChapter(rawContent, rawHeading, tocTitles);
+        const plainText = (chDoc.body ? chDoc.body.textContent : '').trim();
 
         if (plainText.length > 15 || chDoc.querySelector('img')) {
           chapters.push({
-            title: heading,
-            content: bodyText,
+            title: normalized.title || rawHeading,
+            content: normalized.content,
             isHtml: true
           });
         }
@@ -206,10 +208,11 @@ export async function parseEpubFile(file) {
         const rawHtml = await zip.file(htmlFiles[i]).async('text');
         const doc = parser.parseFromString(rawHtml, 'text/html');
         doc.querySelectorAll('script, style, link').forEach((el) => el.remove());
-        const title = doc.querySelector('h1, h2, title')?.textContent?.trim() || `Bagian ${i + 1}`;
+        const rawTitle = doc.querySelector('h1, h2, title')?.textContent?.trim() || `Bagian ${i + 1}`;
+        const normalized = normalizeEpubChapter(doc.body ? doc.body.innerHTML : rawHtml, rawTitle, tocTitles);
         chapters.push({
-          title,
-          content: doc.body ? doc.body.innerHTML : rawHtml,
+          title: normalized.title || rawTitle,
+          content: normalized.content,
           isHtml: true
         });
       } catch (e) {}

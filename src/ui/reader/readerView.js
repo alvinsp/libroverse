@@ -218,14 +218,14 @@ export function openReaderModal(book, targetPageIndex = 0) {
 
       if (bodyEl && pageItem) {
         bodyEl.innerHTML = `
-          <article class="reader-paper">
+          <article class="reader-paper ${pageItem.pageInChapter > 1 ? 'is-continuation-page' : ''}">
             <div class="reader-eyebrow">
-              <span>${escapeHtml(book.title)}</span>
+              <span>${escapeHtml(pageItem.pageInChapter > 1 ? pageItem.chapterTitle : book.title)}</span>
               <span aria-hidden="true">·</span>
               <span>${readPageLabel}</span>
             </div>
-            <h1 class="reader-h1">${escapeHtml(pageItem.chapterTitle)}</h1>
-            <div class="epub-rendered-content reader-page-content">
+            ${pageItem.pageInChapter === 1 ? `<h1 class="reader-h1">${escapeHtml(pageItem.chapterTitle)}</h1>` : ''}
+            <div class="epub-rendered-content reader-page-content ${pageItem.pageInChapter > 1 ? 'is-continuation-content' : ''}">
               ${pageItem.contentHtml}
             </div>
             <nav class="reader-turn-bar" aria-label="Navigasi halaman pembaca">

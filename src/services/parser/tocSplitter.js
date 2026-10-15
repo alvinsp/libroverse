@@ -2,19 +2,16 @@
  * Smart TOC and Chapter Boundary Splitting Engine
  */
 
-export function normalizeTitle(str) {
-  if (!str) return '';
-  return str
-    .toLowerCase()
-    .replace(/[^\w\s\d]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+import { normalizeTitle, normalizeEpubChapter } from './epubNormalizer.js';
+
+export { normalizeTitle };
 
 /**
  * Splits an HTML document into multiple chapters if elements match entries from
  * the book's Table of Contents ("Contents"), or denote distinct section headings.
  * Matching text becomes the title of the next chapter.
+ * Automatically normalizes each split chapter to eliminate duplicate headings
+ * and strip intrusive publisher inline styles.
  */
 export function splitHtmlByTocOrHeadings(chDoc, tocTitles = []) {
   if (!chDoc || !chDoc.body) return null;
@@ -102,9 +99,10 @@ export function splitHtmlByTocOrHeadings(chDoc, tocTitles = []) {
   // If exactly 1 boundary at start, treat that boundary title as the chapter title
   const firstBoundaryIdx = boundaryIndices[0].index;
   if (boundaryIndices.length === 1 && firstBoundaryIdx === 0) {
+    const normalized = normalizeEpubChapter(root.innerHTML, boundaryIndices[0].title, tocTitles);
     return [{
-      title: boundaryIndices[0].title,
-      content: root.innerHTML,
+      title: normalized.title || boundaryIndices[0].title,
+      content: normalized.content,
       isHtml: true
     }];
   }
@@ -119,9 +117,10 @@ export function splitHtmlByTocOrHeadings(chDoc, tocTitles = []) {
     }
     const preText = preContainer.textContent.trim();
     if (preText.length > 20 || preContainer.querySelector('img')) {
+      const normalized = normalizeEpubChapter(preContainer.innerHTML, 'Halaman Pembuka', tocTitles);
       splitChapters.push({
-        title: 'Halaman Pembuka',
-        content: preContainer.innerHTML,
+        title: normalized.title || 'Halaman Pembuka',
+        content: normalized.content,
         isHtml: true
       });
     }
@@ -137,9 +136,12 @@ export function splitHtmlByTocOrHeadings(chDoc, tocTitles = []) {
       chContainer.appendChild(childNodes[i].cloneNode(true));
     }
 
+    // Normalize each chapter: removes the boundary heading element from the body to avoid duplicate titles
+    const normalized = normalizeEpubChapter(chContainer.innerHTML, curr.title, tocTitles);
+
     splitChapters.push({
-      title: curr.title,
-      content: chContainer.innerHTML,
+      title: normalized.title || curr.title,
+      content: normalized.content,
       isHtml: true
     });
   }

@@ -1,5 +1,6 @@
 import { escapeHtml } from '../../utils/domUtils.js';
 import { splitHtmlByTocOrHeadings } from './tocSplitter.js';
+import { normalizeEpubChapter } from './epubNormalizer.js';
 import { parseTextIntoChapters } from './txtParser.js';
 
 export function paginateHtmlContent(html, wordsPerPage = 380) {
@@ -108,7 +109,12 @@ export function buildBookPages(book) {
       if (splits && splits.length > 1) {
         splits.forEach((s) => expandedChapters.push(s));
       } else {
-        expandedChapters.push(ch);
+        const normalized = normalizeEpubChapter(ch.content, ch.title, knownTocTitles);
+        expandedChapters.push({
+          ...ch,
+          title: normalized.title || ch.title,
+          content: normalized.content
+        });
       }
     } else {
       const splits = parseTextIntoChapters(ch.content, ch.title || `Bab ${idx + 1}`);
@@ -134,6 +140,7 @@ export function buildBookPages(book) {
       chPages = paginateHtmlContent(ch.content, 380);
     } else {
       const rawParas = (ch.content || '').split('\n\n').filter((p) => p.trim().length > 0);
+      let foundFirstTextLead = false;
       const htmlContent = rawParas
         .map((p) => {
           const trimmed = p.trim();
@@ -148,7 +155,9 @@ export function buildBookPages(book) {
               </div>
             `;
           }
-          return `<p>${escapeHtml(p)}</p>`;
+          const isLead = !foundFirstTextLead && trimmed.length >= 35;
+          if (isLead) foundFirstTextLead = true;
+          return `<p class="reader-paragraph ${isLead ? 'reader-lead-paragraph' : ''}">${escapeHtml(trimmed)}</p>`;
         })
         .join('');
       chPages = paginateHtmlContent(htmlContent, 380);

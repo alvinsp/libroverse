@@ -1917,44 +1917,147 @@ body {
 .epub-rendered-content {
   max-width: 680px;
   margin: 0 auto;
-  line-height: 1.85;
+  line-height: 1.85 !important;
   font-size: 1.125rem;
   letter-spacing: 0.01em;
+  color: inherit !important;
 }
 
-.epub-rendered-content p {
-  margin-bottom: 1.35em;
+/* Publisher CSS Safety Reset */
+.epub-rendered-content * {
+  box-sizing: border-box;
+  font-family: inherit !important;
+}
+
+.epub-rendered-content p,
+.epub-rendered-content span,
+.epub-rendered-content div,
+.epub-rendered-content li {
+  color: inherit !important;
+  background-color: transparent !important;
+  line-height: inherit !important;
+}
+
+.epub-rendered-content p,
+.epub-rendered-content .reader-paragraph {
+  margin-bottom: 1.45em;
   text-align: left;
   text-wrap: pretty;
+  word-break: break-word;
 }
 
-.epub-rendered-content h1,
+/* Beautiful Drop-Cap Aesthetic (The Celestial Odyssey & Classic Literature Style) */
+.reader-paper:not(.is-continuation-page) .epub-rendered-content .reader-lead-paragraph::first-letter,
+.reader-paper:not(.is-continuation-page) .epub-rendered-content > p.reader-lead-paragraph::first-letter,
+.reader-paper:not(.is-continuation-page) .epub-rendered-content > p:first-of-type::first-letter {
+  font-family: var(--font-reader-serif, "Playfair Display", Georgia, serif);
+  float: left;
+  font-size: 3.4em;
+  line-height: 0.82;
+  font-weight: 700;
+  margin-right: 0.16em;
+  margin-top: 0.06em;
+  color: var(--primary-light);
+  text-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+}
+
+.reader-container[data-theme="sepia"] .epub-rendered-content .reader-lead-paragraph::first-letter,
+.reader-container[data-theme="sepia"] .epub-rendered-content > p:first-of-type::first-letter {
+  color: #8c531b;
+  text-shadow: none;
+}
+
+.reader-container[data-theme="light"] .epub-rendered-content .reader-lead-paragraph::first-letter,
+.reader-container[data-theme="light"] .epub-rendered-content > p:first-of-type::first-letter {
+  color: #4f46e5;
+  text-shadow: none;
+}
+
+/* Distinct, Elegant Subheadings (Recognizes Section Breaks inside Chapters) */
+.reader-subheading,
+.epub-rendered-content .reader-subheading,
 .epub-rendered-content h2,
 .epub-rendered-content h3 {
-  margin-top: 2.2rem;
-  margin-bottom: 1rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.35;
+  color: var(--text-main) !important;
+  margin-top: 2.6rem;
+  margin-bottom: 1.15rem;
+  text-align: left;
   text-wrap: balance;
+  letter-spacing: -0.01em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
-.epub-rendered-content blockquote {
+.reader-subheading::after,
+.epub-rendered-content .reader-subheading::after,
+.epub-rendered-content h2::after {
+  content: '';
+  display: block;
+  width: 38px;
+  height: 2.5px;
+  background: linear-gradient(90deg, var(--accent-cyan), transparent);
+  border-radius: 2px;
+}
+
+.reader-container[data-theme="sepia"] .reader-subheading::after,
+.reader-container[data-theme="sepia"] .epub-rendered-content .reader-subheading::after,
+.reader-container[data-theme="sepia"] .epub-rendered-content h2::after {
+  background: linear-gradient(90deg, #8c531b, transparent);
+}
+
+.reader-container[data-theme="light"] .reader-subheading::after,
+.reader-container[data-theme="light"] .epub-rendered-content .reader-subheading::after,
+.reader-container[data-theme="light"] .epub-rendered-content h2::after {
+  background: linear-gradient(90deg, #4f46e5, transparent);
+}
+
+/* Elegant Blockquotes */
+.epub-rendered-content blockquote,
+.epub-rendered-content .reader-quote {
   border-left: 3.5px solid var(--primary-light);
   padding: 0.85rem 1.4rem;
-  margin: 1.6rem 0;
+  margin: 1.8rem 0;
   background: rgba(124, 58, 237, 0.06);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   font-style: italic;
+  color: var(--text-main) !important;
 }
 
-.reader-container[data-theme="sepia"] .epub-rendered-content blockquote {
+.reader-container[data-theme="sepia"] .epub-rendered-content blockquote,
+.reader-container[data-theme="sepia"] .epub-rendered-content .reader-quote {
   border-left-color: #8c531b;
   background: rgba(140, 83, 27, 0.06);
 }
 
-.reader-container[data-theme="light"] .epub-rendered-content blockquote {
+.reader-container[data-theme="light"] .epub-rendered-content blockquote,
+.reader-container[data-theme="light"] .epub-rendered-content .reader-quote {
   border-left-color: #4f46e5;
   background: rgba(79, 70, 229, 0.05);
+}
+
+/* Responsive Book Images */
+.epub-rendered-content img,
+.epub-rendered-content .reader-img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: var(--radius-md);
+  margin: 1.6rem auto;
+  display: block;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+/* Continuation page flow (turning pages inside the same chapter) */
+.reader-paper.is-continuation-page {
+  padding-top: 0.5rem;
+}
+
+.reader-paper.is-continuation-page .reader-eyebrow {
+  margin-bottom: 1.25rem;
 }
 
 /* In-Reading Exercise / Reflection Callout Box */

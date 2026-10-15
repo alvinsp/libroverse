@@ -16,6 +16,7 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
 | #6 | [Pemisahan Bab Otomatis Berdasarkan Table of Contents ("Contents")](#issue-6-pemisahan-bab-otomatis-sesuai-table-of-contents-contents) | Feature / Parser | `[x] Solved` | `src/services/parser/tocSplitter.js` |
 | #7 | [Sistem Multi-Bahasa (i18n) Tidak Berfungsi](#issue-7-pengubah-bahasa-tidak-berfungsi--belum-reaktif) | Bug / i18n | `[x] Solved` | `src/services/i18n/`, `index.html` |
 | #8 | [Kode Monolitik Belum Menerapkan Clean Architecture](#issue-8-arsitektur-kode-monolitik-belum-menerapkan-clean-architecture) | Architecture / Refactor | `[x] Solved` | `src/core/`, `src/services/`, `src/ui/` |
+| #9 | [Normalisasi EPUB & Eliminasi Judul Duplikat](#issue-9-normalisasi-epub-eliminasi-judul-duplikat-dan-tipografi-seperti-the-celestial-odyssey) | Parser / Typography | `[x] Solved` | `src/services/parser/epubNormalizer.js`, `src/style.css` |
 
 ---
 
@@ -125,6 +126,27 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
     - **`src/utils/`**: Helper murni ([domUtils.js](file:///e:/projects/rea-libroverse/src/utils/domUtils.js), [toast.js](file:///e:/projects/rea-libroverse/src/utils/toast.js)).
   - [x] Memangkas [src/main.js](file:///e:/projects/rea-libroverse/src/main.js) menjadi ~140 baris *orchestrator* murni.
   - [x] Memverifikasi build Vite berhasil tanpa error (`npm run build`).
+- **Status**: `[x] Solved`
+
+---
+
+### Issue #9: Normalisasi EPUB, Eliminasi Judul Duplikat, dan Tipografi seperti "The Celestial Odyssey"
+- **Laporan Pengguna**: *"on the epub when I uploaded and wanted to read. it's still like usual make it to be like 'The Celestial Odyssey' for example. it can determine where is the title and not title, in epub making it like the original epub. if you try to convert the epub to make it readable"*
+- **Penyebab**:
+  1. **Judul Ganda (Duplicate Title Glitch)**: Saat berkas EPUB diekstrak, judul bab dimasukkan ke `h1.reader-h1` di header pembaca, namun elemen judul asli EPUB (`<h1>`, `<h2>`, atau `<p class="title">`) masih tersisa di dalam body HTML konten, sehingga judul tampil dua kali berturut-turut.
+  2. **Gaya Bawaan Publisher Merusak Tema**: Berkas EPUB bawaan publisher memiliki inline style keras (`color: #000000`, `background: #ffffff`, `font-family: 'Times New Roman'`, fixed line-height 12pt) yang membuat teks tidak terbaca pada mode gelap (teks hitam di latar hitam) serta font berantakan.
+  3. **Belum Ada Pembeda Judul vs Sub-judul vs Konten Teks**: Sub-judul internal di dalam bab tidak ditandai secara semantik, dan paragraf awal belum memiliki estetika *drop-cap* seperti buku "The Celestial Odyssey".
+- **Solusi**:
+  - [x] Membangun modul normalisasi canggih [src/services/parser/epubNormalizer.js](file:///e:/projects/rea-libroverse/src/services/parser/epubNormalizer.js):
+    - **Deteksi & Pemisahan Judul Utama**: Mengidentifikasi elemen judul utama bab (mencocokkan TOC, pola `Chapter N: Name`, atau heading awal) dan menghapus elemen tersebut dari dalam body HTML sehingga **tidak terduplikasi** dengan `h1.reader-h1`.
+    - **Pembersihan Inline Style Destruktif**: Menghapus `color`, `background`, `font-family`, `font-size`, `line-height`, `margin`, `padding`, dan class publisher (`calibre*`, `Mso*`) agar teks adaptif sempurna dengan tema Dark (Cosmic), Sepia, dan Light.
+    - **Sub-heading Cerdas (`.reader-subheading`)**: Mengubah sub-judul internal bab (`h2`, `h3`, atau teks tebal pendek pemisah topik) menjadi `<h2 class="reader-subheading">` lengkap dengan aksen garis cyan/emas yang elegan.
+    - **Drop-cap Klasik (`.reader-lead-paragraph`)**: Memberikan huruf inisial besar bergaya sastra klasik pada paragraf pembuka setiap bab persis seperti "The Celestial Odyssey".
+    - **Penataan Kotak Latihan & Kutipan**: Mengonversi `[Exercise: ...]` menjadi `.reader-exercise-box` dan kutipan menjadi `.reader-quote`.
+  - [x] Memperbarui [src/ui/reader/readerView.js](file:///e:/projects/rea-libroverse/src/ui/reader/readerView.js):
+    - `h1.reader-h1` hanya ditampilkan pada **halaman 1** dari setiap bab. Pada halaman 2, 3, dst., teks mengalir natural dari atas tanpa interupsi banner judul raksasa berulang.
+    - Eyebrow pada halaman lanjutan menampilkan judul bab aktif (`Chapter 1 • Halaman 2 dari 5`).
+  - [x] Memperbarui [src/style.css](file:///e:/projects/rea-libroverse/src/style.css) dengan aturan penegas kontras tema dan tipografi buku profesional.
 - **Status**: `[x] Solved`
 
 ---
