@@ -16,6 +16,8 @@ const state = {
   // Reader State
   currentReadingBook: null,
   currentChapterIndex: 0,
+  currentPageIndex: 0,
+  readerMode: localStorage.getItem('libroverse_reader_mode') || 'page',
   readerFontSize: parseInt(localStorage.getItem('libroverse_reader_fs') || '18', 10),
   readerFontFamily: localStorage.getItem('libroverse_reader_ff') || 'serif',
   readerTheme: localStorage.getItem('libroverse_reader_theme') || 'cosmic',
@@ -472,11 +474,286 @@ function attachBookCardListeners(container) {
 }
 
 // ==========================================================================
-// IN-BROWSER EBOOK READER
+// IN-BROWSER EBOOK READER & MULTI-PAGE ENGINE
 // ==========================================================================
-function openReaderModal(book, chapterIndex = 0) {
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function normalizePosixPath(baseDir, relativePath) {
+  if (!relativePath) return '';
+  let clean = relativePath.split('#')[0].split('?')[0];
+  try {
+    clean = decodeURIComponent(clean);
+  } catch (e) {}
+  clean = clean.replace(/\\/g, '/');
+  if (clean.startsWith('/')) {
+    clean = clean.replace(/^\/+/, '');
+  } else if (baseDir) {
+    clean = (baseDir.endsWith('/') ? baseDir : baseDir + '/') + clean;
+  }
+  const parts = clean.split('/');
+  const stack = [];
+  for (const p of parts) {
+    if (!p || p === '.') continue;
+    if (p === '..') {
+      if (stack.length > 0) stack.pop();
+    } else {
+      stack.push(p);
+    }
+  }
+  return stack.join('/');
+}
+
+function resolveZipEntry(zip, opfDir, href) {
+  if (!href || !zip) return null;
+  const target = normalizePosixPath(opfDir, href);
+  let entry = zip.file(target);
+  if (entry) return entry;
+
+  const rawClean = normalizePosixPath('', href);
+  entry = zip.file(rawClean);
+  if (entry) return entry;
+
+  const lowerTarget = target.toLowerCase();
+  const baseName = target.split('/').pop().toLowerCase();
+  const allKeys = Object.keys(zip.files);
+
+  const matchedKey = allKeys.find((k) => k.toLowerCase() === lowerTarget);
+  if (matchedKey) return zip.file(matchedKey);
+
+  const matchedEndKey = allKeys.find(
+    (k) => k.toLowerCase().endsWith('/' + baseName) || k.toLowerCase() === baseName
+  );
+  if (matchedEndKey) return zip.file(matchedEndKey);
+
+  return null;
+}
+
+function paginateHtmlContent(html, wordsPerPage = 380) {
+  if (!html || !html.trim()) return ['<p><em>Halaman kosong.</em></p>'];
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+    const container = doc.body.firstElementChild || doc.body;
+
+    const children = Array.from(container.children);
+    if (children.length === 0) {
+      const rawText = container.textContent || html;
+      const paragraphs = rawText.split(/\n\s*\n+/).filter((p) => p.trim().length > 0);
+      if (paragraphs.length <= 1) {
+        const words = rawText.trim().split(/\s+/).filter(Boolean);
+        if (words.length <= wordsPerPage) {
+          return [`<p>${escapeHtml(rawText)}</p>`];
+        }
+        const pages = [];
+        for (let i = 0; i < words.length; i += wordsPerPage) {
+          const chunk = words.slice(i, i + wordsPerPage).join(' ');
+          pages.push(`<p>${escapeHtml(chunk)}</p>`);
+        }
+        return pages.length > 0 ? pages : [html];
+      }
+      const reconstituted = paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join('');
+      return paginateHtmlContent(reconstituted, wordsPerPage);
+    }
+
+    const pages = [];
+    let currentBlocks = [];
+    let currentWordCount = 0;
+
+    for (const el of children) {
+      const isPageBreak =
+        el.tagName.toLowerCase() === 'hr' ||
+        el.classList.contains('pagebreak') ||
+        el.getAttribute('epub:type') === 'pagebreak';
+
+      if (isPageBreak && currentBlocks.length > 0) {
+        pages.push(currentBlocks.map((b) => b.outerHTML).join(''));
+        currentBlocks = [];
+        currentWordCount = 0;
+        continue;
+      }
+
+      const text = el.textContent || '';
+      const wordCount = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+
+      if (wordCount > 500) {
+        if (currentBlocks.length > 0) {
+          pages.push(currentBlocks.map((b) => b.outerHTML).join(''));
+          currentBlocks = [];
+          currentWordCount = 0;
+        }
+
+        const sentences = text.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || [text];
+        let subSentences = [];
+        let subCount = 0;
+
+        for (const sent of sentences) {
+          const sWords = sent.trim().split(/\s+/).filter(Boolean).length;
+          if (subCount + sWords > wordsPerPage && subSentences.length > 0) {
+            pages.push(`<p>${escapeHtml(subSentences.join(' ').trim())}</p>`);
+            subSentences = [sent];
+            subCount = sWords;
+          } else {
+            subSentences.push(sent);
+            subCount += sWords;
+          }
+        }
+        if (subSentences.length > 0) {
+          pages.push(`<p>${escapeHtml(subSentences.join(' ').trim())}</p>`);
+        }
+        continue;
+      }
+
+      if (currentWordCount + wordCount > wordsPerPage && currentWordCount >= 160) {
+        pages.push(currentBlocks.map((b) => b.outerHTML).join(''));
+        currentBlocks = [el];
+        currentWordCount = wordCount;
+      } else {
+        currentBlocks.push(el);
+        currentWordCount += wordCount;
+      }
+    }
+
+    if (currentBlocks.length > 0) {
+      pages.push(currentBlocks.map((b) => b.outerHTML).join(''));
+    }
+
+    return pages.length > 0 ? pages : [html];
+  } catch (err) {
+    console.warn('Pagination parsing error:', err);
+    return [html];
+  }
+}
+
+function buildBookPages(book) {
+  if (!book) return [];
+  if (book.pagesList && book.pagesList.length > 0) {
+    return book.pagesList;
+  }
+
+  const chapters = book.chapters || [];
+  const pagesList = [];
+  const toc = [];
+
+  chapters.forEach((ch, chIdx) => {
+    const chTitle = ch.title || `Bab ${chIdx + 1}`;
+    const startPageIndex = pagesList.length;
+
+    let chPages = [];
+    if (ch.isHtml) {
+      chPages = paginateHtmlContent(ch.content, 380);
+    } else {
+      const rawParas = (ch.content || '').split('\n\n').filter((p) => p.trim().length > 0);
+      const htmlContent = rawParas.map((p) => `<p>${escapeHtml(p)}</p>`).join('');
+      chPages = paginateHtmlContent(htmlContent, 380);
+    }
+
+    if (chPages.length === 0) {
+      chPages = ['<p><em>Tidak ada konten di bab ini.</em></p>'];
+    }
+
+    const isMajorPart =
+      /^(part|bagian|book|jilid|volume|act|bab\s+\d+|introduction|dedication|foreword|prologue|epilogue|appendix|appendices|about\s+the\s+author)/i.test(
+        chTitle.trim()
+      ) || !chTitle.includes(':');
+    const depth = isMajorPart ? 1 : 2;
+
+    chPages.forEach((pageHtml, pIdx) => {
+      pagesList.push({
+        globalPageIndex: pagesList.length,
+        chapterIndex: chIdx,
+        chapterTitle: chTitle,
+        pageInChapter: pIdx + 1,
+        totalInChapter: chPages.length,
+        contentHtml: pageHtml
+      });
+    });
+
+    toc.push({
+      chapterIndex: chIdx,
+      title: chTitle,
+      startPageIndex: startPageIndex,
+      totalPages: chPages.length,
+      depth: depth
+    });
+  });
+
+  if (pagesList.length === 0) {
+    pagesList.push({
+      globalPageIndex: 0,
+      chapterIndex: 0,
+      chapterTitle: book.title || 'Halaman Pembuka',
+      pageInChapter: 1,
+      totalInChapter: 1,
+      contentHtml: `<p>${escapeHtml(book.synopsis || 'Selamat membaca di Libroverse.')}</p>`
+    });
+    toc.push({
+      chapterIndex: 0,
+      title: book.title || 'Halaman Pembuka',
+      startPageIndex: 0,
+      totalPages: 1,
+      depth: 1
+    });
+  }
+
+  book.pagesList = pagesList;
+  book.totalPages = pagesList.length;
+  book.toc = toc;
+  return pagesList;
+}
+
+function goToNextReaderPage() {
+  const book = state.currentReadingBook;
+  if (!book) return;
+
+  if (book.fileType === 'pdf' || book.isPdf) return;
+
+  if (state.readerMode === 'scroll') {
+    if (state.currentChapterIndex < (book.chapters?.length || 1) - 1) {
+      const nextChIdx = state.currentChapterIndex + 1;
+      const targetPage = book.toc?.[nextChIdx]?.startPageIndex ?? 0;
+      openReaderModal(book, targetPage);
+    }
+  } else {
+    if (book.pagesList && state.currentPageIndex < book.pagesList.length - 1) {
+      openReaderModal(book, state.currentPageIndex + 1);
+    }
+  }
+}
+
+function goToPrevReaderPage() {
+  const book = state.currentReadingBook;
+  if (!book) return;
+
+  if (book.fileType === 'pdf' || book.isPdf) return;
+
+  if (state.readerMode === 'scroll') {
+    if (state.currentChapterIndex > 0) {
+      const prevChIdx = state.currentChapterIndex - 1;
+      const targetPage = book.toc?.[prevChIdx]?.startPageIndex ?? 0;
+      openReaderModal(book, targetPage);
+    }
+  } else {
+    if (state.currentPageIndex > 0) {
+      openReaderModal(book, state.currentPageIndex - 1);
+    }
+  }
+}
+
+function openReaderModal(book, targetPageIndex = 0) {
+  if (!book) return;
   state.currentReadingBook = book;
-  state.currentChapterIndex = chapterIndex;
+
+  // Build pages list if not present
+  buildBookPages(book);
 
   const modal = document.getElementById('reader-modal');
   const container = document.getElementById('reader-container');
@@ -485,78 +762,166 @@ function openReaderModal(book, chapterIndex = 0) {
   const bodyEl = document.getElementById('reader-body-content');
   const prevBtn = document.getElementById('reader-prev-chapter');
   const nextBtn = document.getElementById('reader-next-chapter');
+  const prevText = document.getElementById('reader-prev-btn-text');
+  const nextText = document.getElementById('reader-next-btn-text');
   const pageCounterEl = document.getElementById('reader-page-counter');
+  const jumpInput = document.getElementById('reader-jump-input');
+  const progressBar = document.getElementById('reader-progress-bar');
   const fontValEl = document.getElementById('reader-font-val');
+  const fontFamLabel = document.getElementById('font-family-label');
+  const modeLabel = document.getElementById('reader-mode-label');
+  const tocListEl = document.getElementById('reader-toc-list');
+  const tocBtn = document.getElementById('reader-toc-btn');
 
-  if (!modal || !book) return;
+  if (!modal) return;
 
   // Apply theme & font preferences
-  container.setAttribute('data-theme', state.readerTheme);
-  bodyEl.setAttribute('data-family', state.readerFontFamily);
-  bodyEl.style.fontSize = `${state.readerFontSize}px`;
+  container?.setAttribute('data-theme', state.readerTheme);
+  bodyEl?.setAttribute('data-family', state.readerFontFamily);
+  if (bodyEl) bodyEl.style.fontSize = `${state.readerFontSize}px`;
   if (fontValEl) fontValEl.textContent = `${state.readerFontSize}px`;
+  if (fontFamLabel) fontFamLabel.textContent = state.readerFontFamily === 'serif' ? 'Serif' : 'Sans';
 
-  // Update theme button states
+  if (modeLabel) {
+    modeLabel.textContent = state.readerMode === 'page' ? '📖 Halaman' : '📜 Mode Gulir';
+  }
+
+  // Update theme buttons
   document.querySelectorAll('.reader-theme-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.theme === state.readerTheme);
   });
 
-  const fontFamLabel = document.getElementById('font-family-label');
-  if (fontFamLabel) fontFamLabel.textContent = state.readerFontFamily === 'serif' ? 'Serif' : 'Sans';
+  if (titleEl) titleEl.textContent = book.title;
 
-  titleEl.textContent = book.title;
-
-  // Handle PDF Reading
+  // Handle PDF reading
   if (book.fileType === 'pdf' || book.isPdf) {
     let pdfUrl = book.pdfUrl;
     if (!pdfUrl && book.rawFileBlob) {
       pdfUrl = URL.createObjectURL(book.rawFileBlob);
       book.pdfUrl = pdfUrl;
     }
-    chapterNameEl.textContent = 'Dokumen PDF Lengkap';
-    pageCounterEl.textContent = 'PDF Reader';
-    prevBtn.disabled = true;
-    nextBtn.disabled = true;
-    bodyEl.innerHTML = `
-      <div class="reader-pdf-container">
-        <div class="reader-pdf-toolbar">
-          <span>Format: Dokumen PDF Asli (${book.fileSize || 'PDF'})</span>
-          <a href="${pdfUrl}" target="_blank" download="${book.title}.pdf">↗ Buka PDF di Tab Baru / Unduh</a>
+    if (chapterNameEl) chapterNameEl.textContent = 'Dokumen PDF Lengkap';
+    if (pageCounterEl) pageCounterEl.textContent = 'PDF Reader';
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    if (bodyEl) {
+      bodyEl.innerHTML = `
+        <div class="reader-pdf-container">
+          <div class="reader-pdf-toolbar">
+            <span>Format: Dokumen PDF Asli (${book.fileSize || 'PDF'})</span>
+            <a href="${pdfUrl}" target="_blank" download="${book.title}.pdf">↗ Buka PDF di Tab Baru / Unduh</a>
+          </div>
+          <iframe src="${pdfUrl}#toolbar=1" class="reader-pdf-frame" title="${book.title}"></iframe>
         </div>
-        <iframe src="${pdfUrl}#toolbar=1" class="reader-pdf-frame" title="${book.title}"></iframe>
-      </div>
-    `;
-  } else {
-    // Handle EPUB / Text Reading
-    const totalChapters = (book.chapters && book.chapters.length) || 1;
-    const chapter = (book.chapters && book.chapters[chapterIndex]) || {
-      title: `Bab ${chapterIndex + 1}`,
-      content: book.synopsis || 'Selamat membaca buku di Libroverse.'
-    };
-
-    chapterNameEl.textContent = chapter.title;
-    pageCounterEl.textContent = `Bab ${chapterIndex + 1} dari ${totalChapters}`;
-
-    if (chapter.isHtml) {
-      bodyEl.innerHTML = `
-        <h3>${chapter.title}</h3>
-        <div class="epub-rendered-content">${chapter.content}</div>
-      `;
-    } else {
-      bodyEl.innerHTML = `
-        <h3>${chapter.title}</h3>
-        ${chapter.content
-          .split('\n\n')
-          .map((p) => `<p>${p}</p>`)
-          .join('')}
       `;
     }
+  } else {
+    // Handle EPUB & Paginated Content
+    const totalPages = book.pagesList ? book.pagesList.length : 1;
+    const clampedIndex = Math.max(0, Math.min(targetPageIndex, totalPages - 1));
+    state.currentPageIndex = clampedIndex;
 
-    prevBtn.disabled = chapterIndex === 0;
-    nextBtn.disabled = chapterIndex >= totalChapters - 1;
+    const pageItem = book.pagesList ? book.pagesList[clampedIndex] : null;
+    const currentChapterIdx = pageItem ? pageItem.chapterIndex : 0;
+    state.currentChapterIndex = currentChapterIdx;
+
+    const chapterTitle = pageItem ? pageItem.chapterTitle : (book.chapters?.[0]?.title || 'Bab 1');
+    if (chapterNameEl) chapterNameEl.textContent = chapterTitle;
+
+    // Progress bar calculation
+    const progressPct = totalPages > 1 ? (clampedIndex / (totalPages - 1)) * 100 : 100;
+    if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(0, progressPct))}%`;
+
+    // Jump Input & Page Counter
+    if (jumpInput) {
+      jumpInput.min = '1';
+      jumpInput.max = String(totalPages);
+      jumpInput.value = String(clampedIndex + 1);
+    }
+
+    if (state.readerMode === 'scroll') {
+      // Continuous Scroll Mode: Show full current chapter in clean paper canvas
+      const ch = book.chapters?.[currentChapterIdx] || { title: chapterTitle, content: pageItem?.contentHtml || '' };
+      if (pageCounterEl) {
+        pageCounterEl.textContent = `Bab ${currentChapterIdx + 1} dari ${book.chapters?.length || 1} • Mode Gulir`;
+      }
+      if (prevText) prevText.textContent = 'Bab Sebelumnya';
+      if (nextText) nextText.textContent = 'Bab Berikutnya';
+      if (prevBtn) prevBtn.disabled = currentChapterIdx === 0;
+      if (nextBtn) nextBtn.disabled = currentChapterIdx >= (book.chapters?.length || 1) - 1;
+
+      if (bodyEl) {
+        bodyEl.innerHTML = `
+          <article class="reader-paper">
+            <div class="reader-eyebrow">
+              <span>${escapeHtml(book.title)}</span>
+              <span aria-hidden="true">·</span>
+              <span>Bab ${currentChapterIdx + 1} dari ${book.chapters?.length || 1}</span>
+            </div>
+            <h1 class="reader-h1">${escapeHtml(ch.title)}</h1>
+            <div class="epub-rendered-content">
+              ${ch.content || ''}
+            </div>
+          </article>
+        `;
+      }
+    } else {
+      // Clean Page-By-Page Reading Mode in Paper Canvas
+      if (pageCounterEl) {
+        pageCounterEl.textContent = `Halaman ${clampedIndex + 1} dari ${totalPages} • ${chapterTitle}`;
+      }
+      if (prevText) prevText.textContent = 'Sebelumnya';
+      if (nextText) nextText.textContent = 'Berikutnya';
+      if (prevBtn) prevBtn.disabled = clampedIndex === 0;
+      if (nextBtn) nextBtn.disabled = clampedIndex >= totalPages - 1;
+
+      if (bodyEl && pageItem) {
+        bodyEl.innerHTML = `
+          <article class="reader-paper">
+            <div class="reader-eyebrow">
+              <span>${escapeHtml(book.title)}</span>
+              <span aria-hidden="true">·</span>
+              <span>Halaman ${clampedIndex + 1} dari ${totalPages}</span>
+            </div>
+            <h1 class="reader-h1">${escapeHtml(pageItem.chapterTitle)}</h1>
+            <div class="epub-rendered-content reader-page-content">
+              ${pageItem.contentHtml}
+            </div>
+          </article>
+        `;
+      }
+    }
+
+    // Populate Table of Contents Drawer with Two-Tier Hierarchy
+    if (tocListEl && book.toc) {
+      tocListEl.innerHTML = book.toc
+        .map((item) => {
+          const isCurrentCh = item.chapterIndex === currentChapterIdx;
+          const depth = item.depth || 1;
+          return `
+            <div class="reader-toc-item ${isCurrentCh ? 'active' : ''}" data-depth="${depth}" data-toc-page="${item.startPageIndex}">
+              <span class="reader-toc-item-title">${escapeHtml(item.title)}</span>
+              <span class="reader-toc-page-badge">Hal. ${item.startPageIndex + 1}</span>
+            </div>
+          `;
+        })
+        .join('');
+
+      tocListEl.querySelectorAll('.reader-toc-item').forEach((el) => {
+        el.addEventListener('click', () => {
+          const targetP = parseInt(el.dataset.tocPage, 10);
+          if (!isNaN(targetP)) {
+            openReaderModal(book, targetP);
+            const drawer = document.getElementById('reader-toc-drawer');
+            if (drawer) drawer.hidden = true;
+            tocBtn?.classList.remove('active');
+          }
+        });
+      });
+    }
   }
 
-  bodyEl.scrollTop = 0;
+  if (bodyEl) bodyEl.scrollTop = 0;
   modal.style.setProperty('display', 'flex', 'important');
   modal.classList.add('active');
   modal.hidden = false;
@@ -570,6 +935,12 @@ function openReaderModal(book, chapterIndex = 0) {
 
 function closeReaderModal() {
   const modal = document.getElementById('reader-modal');
+  const tocDrawer = document.getElementById('reader-toc-drawer');
+  const tocBtn = document.getElementById('reader-toc-btn');
+
+  if (tocDrawer) tocDrawer.hidden = true;
+  if (tocBtn) tocBtn.classList.remove('active');
+
   if (modal) {
     modal.style.setProperty('display', 'none', 'important');
     modal.classList.remove('active');
@@ -587,20 +958,76 @@ function setupReaderControls() {
   const fontDec = document.getElementById('reader-font-dec');
   const fontInc = document.getElementById('reader-font-inc');
   const fontFamBtn = document.getElementById('reader-font-family-btn');
-  const prevChapter = document.getElementById('reader-prev-chapter');
-  const nextChapter = document.getElementById('reader-next-chapter');
+  const prevBtn = document.getElementById('reader-prev-chapter');
+  const nextBtn = document.getElementById('reader-next-chapter');
+  const tocBtn = document.getElementById('reader-toc-btn');
+  const tocDrawer = document.getElementById('reader-toc-drawer');
+  const tocCloseBtn = document.getElementById('reader-toc-close-btn');
+  const modeBtn = document.getElementById('reader-mode-btn');
+  const jumpInput = document.getElementById('reader-jump-input');
 
   closeBtn?.addEventListener('click', closeReaderModal);
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeReaderModal();
   });
 
-  // Track scroll progress
+  // Table of Contents Drawer Toggle
+  tocBtn?.addEventListener('click', () => {
+    if (tocDrawer) {
+      const willShow = tocDrawer.hidden;
+      tocDrawer.hidden = !willShow;
+      tocBtn.classList.toggle('active', willShow);
+    }
+  });
+
+  tocCloseBtn?.addEventListener('click', () => {
+    if (tocDrawer) {
+      tocDrawer.hidden = true;
+      tocBtn?.classList.remove('active');
+    }
+  });
+
+  // Reading Mode Toggle
+  modeBtn?.addEventListener('click', () => {
+    state.readerMode = state.readerMode === 'page' ? 'scroll' : 'page';
+    localStorage.setItem('libroverse_reader_mode', state.readerMode);
+    if (state.currentReadingBook) {
+      openReaderModal(state.currentReadingBook, state.currentPageIndex);
+    }
+    showToast(
+      state.readerMode === 'page' ? 'Mode Halaman Buku aktif' : 'Mode Gulir Dokumen aktif',
+      state.readerMode === 'page' ? '📖' : '📜'
+    );
+  });
+
+  // Jump to Page Input
+  function handleJump() {
+    if (!state.currentReadingBook || !state.currentReadingBook.pagesList) return;
+    const target = parseInt(jumpInput?.value, 10);
+    const total = state.currentReadingBook.pagesList.length;
+    if (!isNaN(target) && target >= 1 && target <= total) {
+      openReaderModal(state.currentReadingBook, target - 1);
+    } else if (jumpInput) {
+      jumpInput.value = String(state.currentPageIndex + 1);
+    }
+  }
+
+  jumpInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleJump();
+    }
+  });
+  jumpInput?.addEventListener('change', handleJump);
+
+  // Track scroll progress in Scroll Mode
   bodyEl?.addEventListener('scroll', () => {
-    const total = bodyEl.scrollHeight - bodyEl.clientHeight;
-    const current = bodyEl.scrollTop;
-    const pct = total > 0 ? (current / total) * 100 : 0;
-    if (progressBar) progressBar.style.width = `${pct}%`;
+    if (state.readerMode === 'scroll') {
+      const total = bodyEl.scrollHeight - bodyEl.clientHeight;
+      const current = bodyEl.scrollTop;
+      const pct = total > 0 ? (current / total) * 100 : 0;
+      if (progressBar) progressBar.style.width = `${pct}%`;
+    }
   });
 
   // Font sizing
@@ -642,19 +1069,22 @@ function setupReaderControls() {
     });
   });
 
-  // Chapters
-  prevChapter?.addEventListener('click', () => {
-    if (state.currentReadingBook && state.currentChapterIndex > 0) {
-      openReaderModal(state.currentReadingBook, state.currentChapterIndex - 1);
-    }
-  });
+  // Previous & Next navigation
+  prevBtn?.addEventListener('click', goToPrevReaderPage);
+  nextBtn?.addEventListener('click', goToNextReaderPage);
 
-  nextChapter?.addEventListener('click', () => {
-    if (
-      state.currentReadingBook &&
-      state.currentChapterIndex < state.currentReadingBook.chapters.length - 1
-    ) {
-      openReaderModal(state.currentReadingBook, state.currentChapterIndex + 1);
+  // Keyboard navigation
+  window.addEventListener('keydown', (e) => {
+    const readerModal = document.getElementById('reader-modal');
+    if (!readerModal || readerModal.hidden || readerModal.style.display === 'none') return;
+    if (document.activeElement === jumpInput) return;
+
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+      e.preventDefault();
+      goToNextReaderPage();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      goToPrevReaderPage();
     }
   });
 }
@@ -1332,7 +1762,12 @@ async function initUserBooksStorage() {
     const storedBooks = await getAllBooksFromDB();
     if (storedBooks && storedBooks.length > 0) {
       storedBooks.sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0));
-      // Prepend stored user books to state.books
+      // Prepend stored user books to state.books, ensuring paginated pages exist
+      storedBooks.forEach((b) => {
+        if (!b.pagesList || b.pagesList.length === 0) {
+          buildBookPages(b);
+        }
+      });
       state.books = [...storedBooks, ...BOOKS_DATA];
       filterAndRenderBooks();
     }
@@ -1365,35 +1800,67 @@ async function parseEpubFile(file) {
   const zip = await JSZip.loadAsync(file);
 
   // 1. Locate container.xml to find the OPF package path
-  const containerXml = await zip.file('META-INF/container.xml')?.async('text');
-  if (!containerXml) {
+  const containerEntry =
+    zip.file('META-INF/container.xml') ||
+    zip.file('meta-inf/container.xml') ||
+    resolveZipEntry(zip, '', 'META-INF/container.xml');
+
+  if (!containerEntry) {
     throw new Error('Berkas EPUB tidak memiliki META-INF/container.xml');
   }
 
+  const containerXml = await containerEntry.async('text');
   const parser = new DOMParser();
   const containerDoc = parser.parseFromString(containerXml, 'application/xml');
-  const rootfile = containerDoc.querySelector('rootfile');
-  const opfPath = rootfile?.getAttribute('full-path') || 'content.opf';
-  const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+  const rootfiles = containerDoc.getElementsByTagName('rootfile');
+  const opfPath =
+    (rootfiles.length > 0 && rootfiles[0].getAttribute('full-path')) ||
+    containerDoc.querySelector('rootfile')?.getAttribute('full-path') ||
+    'content.opf';
 
-  // 2. Read OPF file
-  const opfXml = await zip.file(opfPath)?.async('text');
-  if (!opfXml) {
-    throw new Error('Gagal membaca paket metadata OPF EPUB');
+  const opfEntry = resolveZipEntry(zip, '', opfPath);
+  if (!opfEntry) {
+    throw new Error(`Gagal menemukan paket metadata OPF EPUB di "${opfPath}"`);
   }
 
-  const opfDoc = parser.parseFromString(opfXml, 'application/xml');
-  const rawTitle = opfDoc.querySelector('title')?.textContent?.trim();
-  const title = rawTitle || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-  const author = opfDoc.querySelector('creator')?.textContent?.trim() || 'Koleksi Pengguna';
-  const language = opfDoc.querySelector('language')?.textContent?.trim() || 'id';
-  const description =
-    opfDoc.querySelector('description')?.textContent?.trim() ||
-    'Buku digital koleksi pribadi yang diunggah ke Libroverse.';
+  const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
 
-  // 3. Extract Cover Image
+  // 2. Read OPF file with namespace-resilient tag extraction
+  const opfXml = await opfEntry.async('text');
+  const opfDoc = parser.parseFromString(opfXml, 'application/xml');
+
+  const titleNodes = opfDoc.getElementsByTagName('title');
+  const rawTitle = titleNodes.length > 0 ? titleNodes[0].textContent?.trim() : null;
+  const title = rawTitle || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+
+  const creatorNodes = opfDoc.getElementsByTagName('creator');
+  const author = creatorNodes.length > 0 ? creatorNodes[0].textContent?.trim() : 'Koleksi Pengguna';
+
+  const langNodes = opfDoc.getElementsByTagName('language');
+  const language = langNodes.length > 0 ? langNodes[0].textContent?.trim() : 'id';
+
+  const descNodes = opfDoc.getElementsByTagName('description');
+  const description =
+    descNodes.length > 0
+      ? descNodes[0].textContent?.trim()
+      : 'Buku digital koleksi pribadi yang diunggah ke Libroverse.';
+
+  // 3. Extract Manifest Items
+  const manifestItems = Array.from(opfDoc.getElementsByTagName('item'));
+  const manifest = {};
+  manifestItems.forEach((it) => {
+    const id = it.getAttribute('id');
+    if (id) {
+      manifest[id] = {
+        href: it.getAttribute('href'),
+        mediaType: it.getAttribute('media-type') || '',
+        properties: it.getAttribute('properties') || ''
+      };
+    }
+  });
+
+  // 4. Extract Cover Image
   let coverDataUrl = null;
-  const manifestItems = Array.from(opfDoc.querySelectorAll('manifest > item'));
   const coverItem = manifestItems.find((it) => {
     const props = it.getAttribute('properties') || '';
     const id = (it.getAttribute('id') || '').toLowerCase();
@@ -1407,45 +1874,66 @@ async function parseEpubFile(file) {
 
   if (coverItem) {
     const href = coverItem.getAttribute('href');
-    const fullPath = opfDir + href;
-    const coverZipEntry = zip.file(fullPath) || zip.file(href);
+    const coverZipEntry = resolveZipEntry(zip, opfDir, href);
     if (coverZipEntry) {
-      const blob = await coverZipEntry.async('blob');
-      coverDataUrl = await blobToDataUrl(blob);
+      try {
+        const blob = await coverZipEntry.async('blob');
+        coverDataUrl = await blobToDataUrl(blob);
+      } catch (e) {
+        console.warn('Cover extraction error:', e);
+      }
     }
   }
 
-  // 4. Extract Chapters
-  const spineItemrefs = Array.from(opfDoc.querySelectorAll('spine > itemref'));
+  // 5. Extract Chapters via Spine (without artificial limit)
+  const itemrefs = Array.from(opfDoc.getElementsByTagName('itemref'));
   const chapters = [];
 
-  for (let i = 0; i < Math.min(spineItemrefs.length, 60); i++) {
-    const idref = spineItemrefs[i].getAttribute('idref');
-    const item = manifestItems.find((it) => it.getAttribute('id') === idref);
-    if (item) {
-      const href = item.getAttribute('href');
-      const chPath = opfDir + href;
-      const chFile = zip.file(chPath) || zip.file(href);
-      if (chFile) {
-        const rawHtml = await chFile.async('text');
-        const chDoc = parser.parseFromString(rawHtml, 'text/html');
+  for (let i = 0; i < itemrefs.length; i++) {
+    const idref = itemrefs[i].getAttribute('idref');
+    const item = manifest[idref];
+    if (!item || !item.href) continue;
 
-        // Sanitize scripts and styles
-        chDoc.querySelectorAll('script, style, link, meta').forEach((el) => el.remove());
+    const chEntry = resolveZipEntry(zip, opfDir, item.href);
+    if (!chEntry) continue;
 
-        const heading =
-          chDoc.querySelector('h1, h2, h3, title')?.textContent?.trim() || `Bab ${i + 1}`;
-        const bodyText = chDoc.body ? chDoc.body.innerHTML : rawHtml;
-        const plainText = chDoc.body ? chDoc.body.textContent.trim() : '';
+    try {
+      const rawHtml = await chEntry.async('text');
+      const chDoc = parser.parseFromString(rawHtml, 'text/html');
 
-        if (plainText.length > 20) {
-          chapters.push({
-            title: heading,
-            content: bodyText,
-            isHtml: true
-          });
+      // Sanitize scripts and styles
+      chDoc.querySelectorAll('script, style, link, meta').forEach((el) => el.remove());
+
+      // Resolve inline images in chapter
+      const imgEls = Array.from(chDoc.querySelectorAll('img'));
+      for (const img of imgEls) {
+        const src = img.getAttribute('src');
+        if (src && !src.startsWith('data:') && !src.startsWith('http')) {
+          const imgEntry = resolveZipEntry(zip, opfDir, src);
+          if (imgEntry) {
+            try {
+              const imgBlob = await imgEntry.async('blob');
+              const imgData = await blobToDataUrl(imgBlob);
+              img.setAttribute('src', imgData);
+            } catch (err) {}
+          }
         }
       }
+
+      const heading =
+        chDoc.querySelector('h1, h2, h3, title')?.textContent?.trim() || `Bab ${chapters.length + 1}`;
+      const bodyText = chDoc.body ? chDoc.body.innerHTML : rawHtml;
+      const plainText = chDoc.body ? chDoc.body.textContent.trim() : '';
+
+      if (plainText.length > 15 || chDoc.querySelector('img')) {
+        chapters.push({
+          title: heading,
+          content: bodyText,
+          isHtml: true
+        });
+      }
+    } catch (chErr) {
+      console.warn(`Error reading chapter item ${idref}:`, chErr);
     }
   }
 
@@ -1454,16 +1942,18 @@ async function parseEpubFile(file) {
     const htmlFiles = Object.keys(zip.files).filter(
       (n) => (n.endsWith('.html') || n.endsWith('.xhtml') || n.endsWith('.htm')) && !n.includes('cover')
     );
-    for (let i = 0; i < Math.min(htmlFiles.length, 40); i++) {
-      const rawHtml = await zip.file(htmlFiles[i]).async('text');
-      const doc = parser.parseFromString(rawHtml, 'text/html');
-      doc.querySelectorAll('script, style, link').forEach((el) => el.remove());
-      const title = doc.querySelector('h1, h2, title')?.textContent?.trim() || `Bagian ${i + 1}`;
-      chapters.push({
-        title,
-        content: doc.body ? doc.body.innerHTML : rawHtml,
-        isHtml: true
-      });
+    for (let i = 0; i < htmlFiles.length; i++) {
+      try {
+        const rawHtml = await zip.file(htmlFiles[i]).async('text');
+        const doc = parser.parseFromString(rawHtml, 'text/html');
+        doc.querySelectorAll('script, style, link').forEach((el) => el.remove());
+        const title = doc.querySelector('h1, h2, title')?.textContent?.trim() || `Bagian ${i + 1}`;
+        chapters.push({
+          title,
+          content: doc.body ? doc.body.innerHTML : rawHtml,
+          isHtml: true
+        });
+      } catch (e) {}
     }
   }
 
@@ -1475,7 +1965,7 @@ async function parseEpubFile(file) {
     });
   }
 
-  return {
+  const bookData = {
     title,
     author,
     language,
@@ -1483,6 +1973,11 @@ async function parseEpubFile(file) {
     coverDataUrl,
     chapters
   };
+
+  // Compile full pages list and table of contents
+  buildBookPages(bookData);
+
+  return bookData;
 }
 
 // ==========================================================================
@@ -1624,6 +2119,7 @@ function setupUploadModal() {
           coverDataUrl: null,
           chapters: [{ title: 'Bab 1', content: text, isHtml: false }]
         };
+        buildBookPages(bookData);
       }
 
       const fileExt = isEpub ? 'epub' : isPdf ? 'pdf' : 'txt';
@@ -1639,7 +2135,8 @@ function setupUploadModal() {
         langLabel: 'Pribadi',
         rating: 5.0,
         reviewsCount: 1,
-        pages: isPdf ? 1 : Math.max(1, (bookData.chapters || []).length * 15),
+        pages: isPdf ? 1 : Math.max(1, (bookData.pagesList && bookData.pagesList.length) || (bookData.chapters || []).length * 15),
+        totalPages: (bookData.pagesList && bookData.pagesList.length) || 1,
         fileSize: `${formattedSize} ${fileExt.toUpperCase()}`,
         readingTime: `${Math.max(5, Math.round(file.size / 40000))} mnt baca`,
         formats: [fileExt],
@@ -1652,6 +2149,8 @@ function setupUploadModal() {
         synopsis: bookData.description || 'Buku digital koleksi pribadi.',
         quote: 'Setiap buku yang kamu baca adalah jendela semesta baru.',
         chapters: bookData.chapters || [],
+        pagesList: bookData.pagesList || [],
+        toc: bookData.toc || [],
         rawFileBlob: file,
         isUserUploaded: true,
         uploadedAt: new Date().toISOString()
