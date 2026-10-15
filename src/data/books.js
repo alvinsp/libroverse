@@ -1,5 +1,117 @@
 export const BOOKS_DATA = [
   {
+    id: "the-book-you-wish-your-parents-had-read-by-philippa-perry",
+    title: "The Book You Wish Your Parents Had Read",
+    subtitle: "(and Your Children Will Be Glad That You Did)",
+    author: "Philippa Perry",
+    genre: "Filsafat & Sains",
+    language: "en",
+    langLabel: "English",
+    rating: 4.95,
+    reviewsCount: 3820,
+    pages: 320,
+    fileSize: "410 KB EPUB • 1.8 MB PDF",
+    readingTime: "5 jam 10 mnt",
+    formats: ["epub", "pdf", "audio"],
+    audioDuration: "6j 15m",
+    badge: "Sunday Times #1 Bestseller",
+    featured: true,
+    cover: "https://img.bdebooks.com/display-v1/en/8649f3dbf617bd1de4543897ba7e90a4d414141df83e3c5436174bf5ccfcbb60-w240.webp",
+    coverAlt: "Sampul buku The Book You Wish Your Parents Had Read karya Philippa Perry",
+    synopsis: "In this engaging, clever, and compassionate book, renowned psychotherapist Philippa Perry tells us what really matters and what behaviour it is important to avoid in parenting. Rather than obsessing about tips and tricks, this book is about the big picture of relationships across generations.",
+    quote: "It was as though he could not unlock his love until he had unlocked his grief.",
+    chapters: [
+      {
+        title: "Introduction: Parenting is a Relationship",
+        content: `Parenting is not a series of tricks, rules, or behavioral conditioning. At its core, parenting is a relationship. It is the most significant relationship your child will ever have, shaping how they view themselves, how they relate to others, and how they navigate emotional storms throughout their lives.
+
+When we focus solely on obedience or getting through daily routines, we often miss what our children are really communicating. All behavior is communication. When a child screams, withdraws, or clings, they are sending an urgent dispatch about their internal state.
+
+The greatest gift we can offer our children is our own emotional self-awareness. When we understand our triggers and take responsibility for our legacy, we liberate our children to become fully themselves.`
+      },
+      {
+        title: "Part One: Your Parenting Legacy",
+        content: `We all inherit an emotional atmosphere from our childhoods. Whether we realize it or not, the way our parents responded to our tears, our anger, and our joys becomes the default blueprint we carry into our own parenting.
+
+When a parent says, 'I will never do to my child what my parents did to me,' they are often reacting against their upbringing without truly resolving it. Reacting against something is still being controlled by it.
+
+To create a genuine, authentic bond with your child, you must first examine your legacy. What was forbidden in your childhood home? Was anger disallowed? Was sadness dismissed? What parts of yourself did you have to bury in order to remain loved?`
+      },
+      {
+        title: "The past comes back to bite us (and our children)",
+        content: `Your child is a mirror. When they reach the exact age at which you experienced neglect, criticism, or loneliness, their presence will trigger those buried somatic memories in you.
+
+Many parents describe sudden, intense feelings of irritation, boredom, or a desperate desire to escape when their toddler has a meltdown. These emotions often do not belong to the child—they belong to the parent's unhealed past.
+
+When we mistake our historical pain for our child's present behavior, we unfairly punish them for our own unresolved wounds. Acknowledging this connection is the first step toward genuine freedom.`
+      },
+      {
+        title: "Rupture and repair",
+        content: `No parent is perfect. In every healthy relationship, ruptures will happen. You will lose your temper, you will misjudge a situation, you will be distracted when your child needs you most.
+
+Perfection is not required for good mental health; what is essential is repair. When you rupture connection with your child, do you pretend nothing happened, or do you acknowledge your mistake and reconnect?
+
+A sincere repair teaches a child that love is resilient, that conflict does not mean abandonment, and that human mistakes can be forgiven.`
+      },
+      {
+        title: "Repairing the past",
+        content: `thought it was important that he did indeed unlock and open it because, otherwise, he wouldn’t be sensitive to the needs of his own son and would pass down to Toby what had been passed down to him. I wasn’t sure from his response if he heard what I was actually saying.
+
+I didn’t see Mark until six months later, at a different workshop. He told me he’d been feeling depressed and, rather than just dismissing it, he’d decided to start having therapy. To his surprise, he told me, he found himself crying and shouting in the therapist’s room about his own father leaving him.
+
+Therapy helped me put the feelings where they needed to be – with the desertion of my dad, rather than thinking I just wasn’t cut out to be in this relationship or to be a parent.
+
+I’m not saying I don’t still feel bored, or even resentful sometimes, but I know that resentment belongs in my past. I know it’s not about Toby.
+
+I can see the point of all the attention I give to Toby now; it’s to make him feel good, not just now but in the future. Toni and I are filling him up with love and, hopefully, that will mean he has love to give when he’s older, so he will feel valuable.
+
+I have no relationship with my own father. I know Toby is getting from me what I didn’t get from my own dad, that we are laying the foundations of a great relationship.
+
+Seeing the point of what I’m doing has turned most of my discontent to hope and gratitude. I feel closer to Toni again now too. Now I am more interested in and present with Toby, it has freed Toni up to think of other things apart from him.
+
+Mark repaired the rupture with Toby – his desire to desert him – by looking into his own past in order to understand what was happening in the present. Then he was able to change his attitude towards being with his son.
+
+It was as though he could not unlock his love until he had unlocked his grief.
+
+Some time ago, a mother-to-be asked me what my one suggestion for a new parent would be. I told her, whatever age your child is, they are liable to remind you, on a bodily level, of the emotions you went through when you were at a similar stage. She looked at me, a bit bemused.
+
+A year or so later, with a toddler at her feet, that same mum told me that she hadn’t understood what I meant at the time. But she’d remembered it and, as she grew into her new role, it had begun to make so much sense and had helped her to feel for her child as well. You won’t remember consciously what it’s like to be a baby, but on other levels you will remember, and your child will keep reminding you.
+
+It is common for a parent to withdraw from their child at a very similar age to when that parent’s parent became unavailable to them. Or a parent will want to pull away emotionally when their child is the same age as they were when they felt alone. Mark is a classic example of someone who didn’t want to face up to the feelings his child was bringing up in him.
+
+You might want to run away from these feelings, and from your child too, but if you do you will pass down what was done to you. There will be plenty of good stuff you will be passing on too – all that love you received – but what you don’t want to pass on is your inherited fear, hate, loneliness or resentment. There will be times when you feel unpleasant emotions towards or around your child, just like you occasionally may towards your partner, your parent, your friend or yourself. If you admit this, then you will be less likely to be unthinkingly punishing them for whatever feeling they have brought up in you.
+
+If you find, as Mark did, that you resent family life because you feel pushed aside, it could be because you were pushed aside as a child and not considered in one or both of your parents’ lives. Sometimes this resentment can feel more like boredom or a feeling of disconnection from your child.
+
+Some parents think I’m exaggerating when I use words like 'desertion' and 'resentment'. 'I don’t resent my children,' they say. 'Sometimes I want to be left alone in peace, but I love them.' I think of desertion as a spectrum. On the most severe end, there’s the actual desertion of physically removing yourself from the child’s life entirely, like Mark’s father did. But I also consider desertion to include pushing a child away when they want your attention or not really listening to them when they are trying to, for example, show you their painting (which is your child trying to show you, on one level, who they really are).
+
+This feeling of wanting to push children away, of wanting them to sleep long and to play independently before they are ready so they don’t take up your time, can come about when you’re trying not to feel with your child because they’re such a painful reminder of your childhood. Because of this, you’re unable to surrender to their needs. It’s true we may tell ourselves we push our children away because we want more of the other areas of our lives, such as work, friends and Netflix, but we are the grown-ups here. We know that this needy stage is just that, a stage, whereas our work, friends and other leisure pursuits can be picked up when this small person does not need us so much.
+
+It is hard to face up to this, to stop how we ourselves were treated being passed on to another generation. We need to notice how we feel, then reflect on that, rather than react to any feelings we don’t properly understand.
+
+Facing up to the less acceptable ways we might want to act – in Mark’s case, for example, running away – can also bring up feelings of shame. When this happens there’s a tendency to get defensive so as not to feel the shame. And if we do that, we change nothing and we pass our dysfunction on to another generation. But shame doesn’t kill us. When we realize what is happening, we can turn our shame into pride because we noticed how we felt compelled to act and became aware of how we needed to change.
+
+What really matters is being comfortable with your child, making them feel safe and that you want to be around them. The words we use are a small part of that; a bigger part is our warmth, our touch, our goodwill and the respect we show them: respect for their feelings, their person, their opinions and their interpretation of their world. In other words, we need to show the love we feel for them when they are awake, not just when they look beautiful asleep.
+
+If you feel yourself wanting a break from your children every hour of every day, what you probably need is a break from the feelings they trigger in you. To avoid being controlled by those triggers, look back at yourself as a baby or as a child with compassion. Once you’ve been able to do that, you will be able to identify with the need and longing your children have for you. It is of course important to get a babysitter from time to time and to enjoy some adult pursuit, but be aware if the feeling of wanting a break feels particularly charged and seems to be there most of the time, then dare to remember what it felt like when you were the same age as your child is now.
+
+[Exercise: Looking back with compassion]
+Ask yourself what behaviour in your child triggers the strongest negative response in you. What happened to you as a child when you demonstrated the same behaviour?
+
+[Exercise: Message from your memories]
+Close your eyes and remember your very earliest memory. It may just be an image or a feeling, or it may have a story. What is the predominant emotion in your memory? What relevance can you trace from the memory to who you are now? How does the memory influence how you parent? Remember: if anything comes up when you do this exercise, for example a fear of feeling ashamed, which may now be explored with empathy rather than avoidance.`
+      },
+      {
+        title: "How we talk to ourselves",
+        content: `The internal dialogue running through your mind during moments of parenting stress directly shapes your external reactions.
+
+When your child spills a cup of milk or refuses to put on their shoes, what voice speaks in your head? Is it a voice of catastrophic dread ('They will never learn', 'I am a failure as a parent') or is it a voice of grounded calm ('They are learning, this is just a spilled drink')?
+
+Becoming mindful of our self-talk allows us to pause between stimulus and response. In that pause lies our capacity to choose connection over reaction.`
+      }
+    ]
+  },
+  {
     id: "hamlet-by-william-shakespeare",
     title: "Hamlet",
     subtitle: "The Tragedy of the Prince of Denmark",

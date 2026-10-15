@@ -652,7 +652,23 @@ function buildBookPages(book) {
       chPages = paginateHtmlContent(ch.content, 380);
     } else {
       const rawParas = (ch.content || '').split('\n\n').filter((p) => p.trim().length > 0);
-      const htmlContent = rawParas.map((p) => `<p>${escapeHtml(p)}</p>`).join('');
+      const htmlContent = rawParas
+        .map((p) => {
+          const trimmed = p.trim();
+          if (trimmed.startsWith('[Exercise:') || trimmed.startsWith('Exercise:') || trimmed.startsWith('Latihan:')) {
+            const labelMatch = trimmed.match(/^\[?(Exercise:[^\]\n]+|Latihan:[^\]\n]+)\]?/i);
+            const label = labelMatch ? labelMatch[1] : 'Exercise';
+            const body = trimmed.replace(/^\[?(Exercise:[^\]\n]+|Latihan:[^\]\n]+)\]?\s*/i, '');
+            return `
+              <div class="reader-exercise-box">
+                <div class="reader-exercise-badge">💡 ${escapeHtml(label)}</div>
+                ${body ? `<p class="reader-exercise-text">${escapeHtml(body)}</p>` : ''}
+              </div>
+            `;
+          }
+          return `<p>${escapeHtml(p)}</p>`;
+        })
+        .join('');
       chPages = paginateHtmlContent(htmlContent, 380);
     }
 
@@ -862,8 +878,28 @@ function openReaderModal(book, targetPageIndex = 0) {
             <div class="epub-rendered-content">
               ${ch.content || ''}
             </div>
+            <nav class="reader-turn-bar" aria-label="Navigasi bab pembaca">
+              <button type="button" class="reader-turn-btn" data-turn="prev" ${currentChapterIdx === 0 ? 'disabled' : ''}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>
+                <span>Bab Sebelumnya</span>
+              </button>
+              <div class="reader-turn-read-meta">
+                <span class="read-pct-badge">${Math.round(progressPct)}% selesai</span>
+                <span class="read-chap-indicator">Bab ${currentChapterIdx + 1} dari ${book.chapters?.length || 1}</span>
+              </div>
+              <button type="button" class="reader-turn-btn reader-turn-btn--primary" data-turn="next" ${currentChapterIdx >= (book.chapters?.length || 1) - 1 ? 'disabled' : ''}>
+                <span>Bab Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </nav>
           </article>
         `;
+        bodyEl.querySelectorAll('.reader-turn-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            if (btn.dataset.turn === 'prev') goToPrevReaderPage();
+            if (btn.dataset.turn === 'next') goToNextReaderPage();
+          });
+        });
       }
     } else {
       // Clean Page-By-Page Reading Mode in Paper Canvas
@@ -887,8 +923,28 @@ function openReaderModal(book, targetPageIndex = 0) {
             <div class="epub-rendered-content reader-page-content">
               ${pageItem.contentHtml}
             </div>
+            <nav class="reader-turn-bar" aria-label="Navigasi halaman pembaca">
+              <button type="button" class="reader-turn-btn" data-turn="prev" ${clampedIndex === 0 ? 'disabled' : ''}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>
+                <span>Halaman Sebelumnya</span>
+              </button>
+              <div class="reader-turn-read-meta">
+                <span class="read-pct-badge">${Math.round(progressPct)}% selesai</span>
+                <span class="read-chap-indicator">Hal. ${clampedIndex + 1} dari ${totalPages}</span>
+              </div>
+              <button type="button" class="reader-turn-btn reader-turn-btn--primary" data-turn="next" ${clampedIndex >= totalPages - 1 ? 'disabled' : ''}>
+                <span>Halaman Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </nav>
           </article>
         `;
+        bodyEl.querySelectorAll('.reader-turn-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            if (btn.dataset.turn === 'prev') goToPrevReaderPage();
+            if (btn.dataset.turn === 'next') goToNextReaderPage();
+          });
+        });
       }
     }
 

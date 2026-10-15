@@ -1871,15 +1871,18 @@ body {
 .reader-eyebrow {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--primary-light);
-  opacity: 0.85;
-  margin-bottom: 0.85rem;
+  opacity: 0.9;
+  text-align: center;
+  text-wrap: balance;
+  margin-bottom: 0.65rem;
 }
 
 .reader-container[data-theme="sepia"] .reader-eyebrow {
@@ -1892,11 +1895,14 @@ body {
 
 .reader-h1 {
   font-family: var(--font-heading);
-  font-size: 2.15rem;
-  font-weight: 800;
+  font-size: clamp(1.85rem, 3.5vw, 2.4rem);
+  font-weight: 700;
   line-height: 1.25;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  text-align: center;
+  text-wrap: balance;
+  max-width: 680px;
+  margin: 0.5rem auto 2rem;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1909,15 +1915,17 @@ body {
 }
 
 .epub-rendered-content {
+  max-width: 680px;
+  margin: 0 auto;
   line-height: 1.85;
   font-size: 1.125rem;
+  letter-spacing: 0.01em;
 }
 
 .epub-rendered-content p {
-  margin-bottom: 1.45rem;
-  text-align: justify;
-  text-justify: inter-word;
-  hyphens: auto;
+  margin-bottom: 1.35em;
+  text-align: left;
+  text-wrap: pretty;
 }
 
 .epub-rendered-content h1,
@@ -1927,6 +1935,7 @@ body {
   margin-bottom: 1rem;
   font-weight: 700;
   line-height: 1.3;
+  text-wrap: balance;
 }
 
 .epub-rendered-content blockquote {
@@ -1941,6 +1950,146 @@ body {
 .reader-container[data-theme="sepia"] .epub-rendered-content blockquote {
   border-left-color: #8c531b;
   background: rgba(140, 83, 27, 0.06);
+}
+
+.reader-container[data-theme="light"] .epub-rendered-content blockquote {
+  border-left-color: #4f46e5;
+  background: rgba(79, 70, 229, 0.05);
+}
+
+/* In-Reading Exercise / Reflection Callout Box */
+.reader-exercise-box {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  border-left: 4px solid var(--accent-cyan);
+  border-radius: var(--radius-md);
+  padding: 1.35rem 1.6rem;
+  margin: 2.2rem 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.reader-exercise-badge {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-cyan);
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.reader-exercise-text {
+  margin-bottom: 0 !important;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.reader-container[data-theme="sepia"] .reader-exercise-box {
+  background: rgba(140, 83, 27, 0.08);
+  border-color: rgba(140, 83, 27, 0.25);
+  border-left-color: #8c531b;
+}
+
+.reader-container[data-theme="sepia"] .reader-exercise-badge {
+  color: #8c531b;
+}
+
+.reader-container[data-theme="light"] .reader-exercise-box {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  border-left-color: #4f46e5;
+}
+
+.reader-container[data-theme="light"] .reader-exercise-badge {
+  color: #4f46e5;
+}
+
+/* In-Reading Bottom Chapter Turn Navigation Bar */
+.reader-turn-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 680px;
+  margin: 2.8rem auto 0;
+  padding-top: 1.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.reader-container[data-theme="sepia"] .reader-turn-bar {
+  border-top-color: rgba(43, 31, 20, 0.12);
+}
+
+.reader-container[data-theme="light"] .reader-turn-bar {
+  border-top-color: rgba(15, 23, 42, 0.1);
+}
+
+.reader-turn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  color: inherit;
+  transition: all var(--transition-fast);
+}
+
+.reader-container[data-theme="sepia"] .reader-turn-btn {
+  background: rgba(43, 31, 20, 0.06);
+  border-color: rgba(43, 31, 20, 0.15);
+}
+
+.reader-container[data-theme="light"] .reader-turn-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.reader-turn-btn:hover:not(:disabled) {
+  background: var(--primary-purple);
+  color: #fff;
+  border-color: var(--primary-light);
+}
+
+.reader-turn-btn--primary {
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #9333ea 100%) !important;
+  border-color: var(--primary-light) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+.reader-turn-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.reader-turn-read-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.read-pct-badge {
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.reader-container[data-theme="sepia"] .read-pct-badge {
+  color: #8c531b;
+}
+
+.reader-container[data-theme="light"] .read-pct-badge {
+  color: #4f46e5;
 }
 
 .reader-container[data-theme="light"] .epub-rendered-content blockquote {
