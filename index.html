@@ -2,7 +2,7 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Libroverse — Perpustakaan Semesta Digital | Baca & Unduh EPUB, PDF, Audiobook Gratis</title>
     
     <!-- SEO & Metadata -->
@@ -437,6 +437,12 @@
                 <button type="button" class="reader-theme-btn" data-theme="sepia" title="Tema Kertas Sepia" aria-label="Tema Sepia">📜</button>
                 <button type="button" class="reader-theme-btn" data-theme="light" title="Tema Siang Cerah" aria-label="Tema Cerah">☀️</button>
               </div>
+
+              <!-- Expand / Maximize Frame Button -->
+              <button type="button" class="reader-btn reader-expand-btn" id="reader-expand-btn" title="Perbesar Layar Baca Penuh" aria-label="Perbesar Layar">
+                <svg id="reader-expand-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                <svg id="reader-compress-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" hidden><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>
+              </button>
 
               <!-- Close Reader Button -->
               <button type="button" class="reader-close-btn" id="reader-close-btn" aria-label="Tutup Pembaca Buku">

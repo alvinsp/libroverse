@@ -1,5 +1,5 @@
-import { BOOKS_DATA, GENRES_LIST, STATS_DATA } from './data/books.js';
 import JSZip from 'jszip';
+import { BOOKS_DATA, GENRES_LIST } from './data/books.js';
 
 // ==========================================================================
 // STATE MANAGEMENT & LOCAL STORAGE
@@ -12,7 +12,7 @@ const state = {
   searchQuery: '',
   sortBy: 'popular',
   currentLang: 'id',
-  
+
   // Reader State
   currentReadingBook: null,
   currentChapterIndex: 0,
@@ -242,7 +242,7 @@ function toggleAmbientSpaceAudio() {
       try {
         gain.gain.setTargetAtTime(0, state.audioContext.currentTime, 0.5);
         setTimeout(() => osc.stop(), 500);
-      } catch (_) {}
+      } catch (_) { }
     });
     state.ambientOscillators = [];
     state.isAmbientPlaying = false;
@@ -491,7 +491,7 @@ function normalizePosixPath(baseDir, relativePath) {
   let clean = relativePath.split('#')[0].split('?')[0];
   try {
     clean = decodeURIComponent(clean);
-  } catch (e) {}
+  } catch (e) { }
   clean = clean.replace(/\\/g, '/');
   if (clean.startsWith('/')) {
     clean = clean.replace(/^\/+/, '');
@@ -965,6 +965,31 @@ function setupReaderControls() {
   const tocCloseBtn = document.getElementById('reader-toc-close-btn');
   const modeBtn = document.getElementById('reader-mode-btn');
   const jumpInput = document.getElementById('reader-jump-input');
+  const expandBtn = document.getElementById('reader-expand-btn');
+  const container = document.getElementById('reader-container');
+  const expandIcon = document.getElementById('reader-expand-icon');
+  const compressIcon = document.getElementById('reader-compress-icon');
+
+  // Restore expanded state if user previously maximized reader canvas
+  const isInitiallyExpanded = localStorage.getItem('libroverse_reader_expanded') === 'true';
+  if (isInitiallyExpanded) {
+    modal?.classList.add('is-expanded');
+    container?.classList.add('is-expanded');
+    if (expandIcon) expandIcon.hidden = true;
+    if (compressIcon) compressIcon.hidden = false;
+  }
+
+  expandBtn?.addEventListener('click', () => {
+    const isNowExpanded = container?.classList.toggle('is-expanded');
+    modal?.classList.toggle('is-expanded', isNowExpanded);
+    if (expandIcon) expandIcon.hidden = isNowExpanded;
+    if (compressIcon) compressIcon.hidden = !isNowExpanded;
+    localStorage.setItem('libroverse_reader_expanded', String(isNowExpanded));
+    showToast(
+      isNowExpanded ? 'Mode Layar Penuh diaktifkan' : 'Mode Layar Normal aktif',
+      isNowExpanded ? '⛶' : '📖'
+    );
+  });
 
   closeBtn?.addEventListener('click', closeReaderModal);
   modal?.addEventListener('click', (e) => {
@@ -1087,6 +1112,40 @@ function setupReaderControls() {
       goToPrevReaderPage();
     }
   });
+
+  // Mobile Touch Swipe Gesture for Natural Page Turning
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+
+  bodyEl?.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }
+  }, { passive: true });
+
+  bodyEl?.addEventListener('touchend', (e) => {
+    if (e.changedTouches && e.changedTouches.length === 1 && state.readerMode === 'page') {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+      const duration = Date.now() - touchStartTime;
+
+      // Swiped at least 45px horizontally and gesture was faster than 550ms
+      if (duration < 550 && Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+        if (diffX < 0) {
+          // Swipe left -> next page
+          goToNextReaderPage();
+        } else {
+          // Swipe right -> previous page
+          goToPrevReaderPage();
+        }
+      }
+    }
+  }, { passive: true });
 }
 
 // ==========================================================================
@@ -1915,7 +1974,7 @@ async function parseEpubFile(file) {
               const imgBlob = await imgEntry.async('blob');
               const imgData = await blobToDataUrl(imgBlob);
               img.setAttribute('src', imgData);
-            } catch (err) {}
+            } catch (err) { }
           }
         }
       }
@@ -1953,7 +2012,7 @@ async function parseEpubFile(file) {
           content: doc.body ? doc.body.innerHTML : rawHtml,
           isHtml: true
         });
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 

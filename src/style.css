@@ -1667,12 +1667,17 @@ body {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(4, 2, 10, 0.88);
+  background: rgba(4, 2, 10, 0.92);
   backdrop-filter: blur(25px);
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
+  transition: padding var(--transition-fast);
+}
+
+.reader-modal-overlay.is-expanded {
+  padding: 0 !important;
 }
 
 .reader-modal-overlay.active {
@@ -1680,15 +1685,25 @@ body {
 }
 
 .reader-container {
-  width: 100%;
-  max-width: 900px;
-  height: 90vh;
+  width: 96vw;
+  max-width: 1320px;
+  height: 95vh;
+  max-height: 96vh;
   border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 25px 95px rgba(0, 0, 0, 0.95), 0 0 45px rgba(124, 58, 237, 0.3);
   overflow: hidden;
-  transition: background var(--transition-normal), color var(--transition-normal);
+  transition: width var(--transition-normal), height var(--transition-normal), max-width var(--transition-normal), border-radius var(--transition-normal), background var(--transition-normal), color var(--transition-normal);
+}
+
+.reader-container.is-expanded {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
 }
 
 /* Reader Themes */
@@ -1840,12 +1855,17 @@ body {
   font-family: var(--font-reader-sans);
 }
 
-/* Centered Book Paper Layout (Optimal 65-75ch Measure) */
+/* Centered Book Paper Layout (Optimal 65-80ch Measure) */
 .reader-paper {
   width: 100%;
-  max-width: 740px;
+  max-width: 860px;
   margin: 0 auto;
-  padding-bottom: 3rem;
+  padding-bottom: 3.5rem;
+  transition: max-width var(--transition-normal);
+}
+
+.reader-container.is-expanded .reader-paper {
+  max-width: 1000px;
 }
 
 .reader-eyebrow {
@@ -2879,33 +2899,754 @@ body {
 
 @media (max-width: 768px) {
   :root {
-    --nav-height: 68px;
+    --nav-height: 64px;
   }
+
+  /* Base Body & Layout Mobile Optimization */
+  body {
+    font-size: 15px;
+  }
+
+  /* Navigation Bar Mobile */
+  .nav-container {
+    padding: 0 0.85rem;
+    gap: 0.5rem;
+  }
+
+  .brand-link {
+    gap: 0.55rem;
+  }
+
+  .logo-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-logo-img {
+    border-radius: 10px;
+  }
+
+  .brand-title {
+    font-size: 1.12rem;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
   .nav-search-bar {
     display: none;
   }
+
+  .nav-actions {
+    gap: 0.35rem;
+  }
+
+  .icon-action-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .lang-btn {
+    height: 36px;
+    padding: 0 0.55rem;
+    font-size: 0.78rem;
+    gap: 0.3rem;
+    border-radius: 8px;
+  }
+
+  .upload-pill-btn {
+    height: 36px;
+    padding: 0 0.65rem;
+    font-size: 0.76rem;
+  }
+
+  .upload-pill-btn span {
+    display: none;
+  }
+
+  .shelf-pill-btn {
+    height: 36px;
+    padding: 0 0.65rem;
+    font-size: 0.76rem;
+    gap: 0.4rem;
+  }
+
+  .shelf-pill-btn > span:not(.shelf-count-badge) {
+    display: none;
+  }
+
+  .install-pwa-btn {
+    height: 36px;
+    padding: 0 0.55rem;
+    font-size: 0.76rem;
+  }
+
+  .install-pwa-btn span {
+    display: none;
+  }
+
+  /* Hero Section Mobile */
+  .hero-section {
+    padding: 1.75rem 1rem 1.5rem;
+    gap: 2rem;
+  }
+
+  .hero-content {
+    gap: 1.15rem;
+  }
+
+  .hero-badge {
+    font-size: 0.74rem;
+    padding: 4px 10px;
+    gap: 0.4rem;
+    max-width: 100%;
+  }
+
+  .hero-badge .badge-pill {
+    display: none;
+  }
+
   .hero-title {
-    font-size: 2.3rem;
+    font-size: clamp(1.8rem, 7.5vw, 2.4rem);
+    line-height: 1.2;
   }
+
+  .hero-subtitle {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .hero-search-box {
+    width: 100%;
+  }
+
+  .search-box-inner {
+    padding: 0.35rem 0.4rem 0.35rem 0.75rem;
+    gap: 0.5rem;
+    border-radius: var(--radius-md);
+  }
+
+  .prompt-icon {
+    font-size: 1.15rem;
+  }
+
+  .search-box-inner input {
+    font-size: 0.88rem;
+  }
+
+  .search-box-inner input::placeholder {
+    font-size: 0.8rem;
+  }
+
+  .hero-explore-btn {
+    padding: 0.65rem 1rem;
+    font-size: 0.86rem;
+    border-radius: var(--radius-sm);
+    gap: 0.3rem;
+  }
+
+  .hero-explore-btn span {
+    display: inline;
+  }
+
+  .hero-quick-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.2rem 0 0.5rem;
+    scrollbar-width: none;
+    gap: 0.45rem;
+  }
+
+  .hero-quick-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chips-label {
+    display: none;
+  }
+
+  .quick-chip {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 5px 12px;
+    font-size: 0.74rem;
+  }
+
+  .hero-personal-upload-row {
+    width: 100%;
+  }
+
+  .hero-upload-shortcut-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.82rem;
+    padding: 8px 14px;
+    text-align: center;
+  }
+
   .hero-stats-ribbon {
-    flex-wrap: wrap;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem 1.25rem;
+    padding-top: 0.5rem;
   }
+
   .stat-divider {
     display: none;
   }
-  .audio-bar-inner {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+
+  .stat-value {
+    font-size: 1.25rem;
   }
-  .audio-right-controls {
+
+  .stat-label {
+    font-size: 0.72rem;
+  }
+
+  .hero-spotlight {
+    width: 100%;
+    perspective: none;
+  }
+
+  .spotlight-card {
+    max-width: 100%;
+    width: 100%;
+    padding: 1.25rem;
+    transform: none !important;
+  }
+
+  .spotlight-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .spotlight-actions button {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    justify-content: center;
+  }
+
+  /* Catalogue Section & Filter Bar Mobile */
+  .catalogue-section {
+    padding: 2.5rem 1rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+  }
+
+  .filters-bar {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .format-filters {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 4px;
+    scrollbar-width: none;
+  }
+
+  .format-filters::-webkit-scrollbar {
     display: none;
   }
-  .reader-body {
-    padding: 1.5rem;
+
+  .format-btn {
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    padding: 6px 8px;
   }
+
+  .sort-select {
+    width: 100%;
+    font-size: 0.82rem;
+    padding: 8px 12px;
+  }
+
+  .genre-pills-container {
+    padding: 0.25rem 0 0.65rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.5rem;
+  }
+
+  .genre-pills-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .genre-pill {
+    padding: 6px 14px;
+    font-size: 0.82rem;
+  }
+
+  .books-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .book-card {
+    padding: 1rem;
+  }
+
+  .card-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 0.45rem;
+  }
+
+  .card-read-primary-btn, 
+  .card-dl-secondary-btn {
+    font-size: 0.78rem;
+    padding: 7px 8px;
+    gap: 0.3rem;
+  }
+
+  /* Curated Nusantara Banner Mobile */
+  .curated-card-banner {
+    padding: 1.6rem 1.15rem;
+    gap: 1.35rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .curated-title {
+    font-size: 1.45rem;
+  }
+
+  .curated-desc {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .curated-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.6rem;
+  }
+
+  .curated-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ========================================================================
+     IMMERSIVE FULLSCREEN BOOK READER ON MOBILE
+     Frames are 100% full-bleed edge-to-edge for maximum readable area!
+     ======================================================================== */
+  .reader-modal-overlay {
+    padding: 0 !important;
+  }
+
+  .reader-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+
+  .reader-header {
+    padding: 0.6rem 0.75rem;
+    gap: 0.4rem;
+  }
+
+  .reader-meta {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .reader-title {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .reader-chapter-title {
+    font-size: 0.72rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .reader-controls {
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .reader-btn {
+    padding: 4px 6px;
+    font-size: 0.76rem;
+  }
+
+  #reader-toc-btn span {
+    font-size: 0.76rem;
+  }
+
+  #reader-mode-btn {
+    padding: 4px 6px;
+    font-size: 0.76rem;
+  }
+
+  .font-size-indicator {
+    font-size: 0.7rem;
+    padding: 0 2px;
+  }
+
+  #reader-font-family-btn {
+    display: none;
+  }
+
+  #reader-expand-btn {
+    display: none; /* Already 100% edge-to-edge full screen on phone */
+  }
+
+  .reader-theme-btn {
+    font-size: 0.85rem;
+    padding: 3px 4px;
+  }
+
+  .reader-body {
+    padding: 1.25rem 0.95rem;
+    font-size: 1.05rem;
+  }
+
+  .reader-paper {
+    max-width: 100%;
+    padding-bottom: 2.2rem;
+  }
+
+  .reader-h1 {
+    font-size: 1.45rem;
+    margin-bottom: 1.15rem;
+    padding-bottom: 0.6rem;
+  }
+
+  .epub-rendered-content {
+    font-size: 1.05rem;
+    line-height: 1.75;
+  }
+
+  .epub-rendered-content p {
+    margin-bottom: 1.2rem;
+    text-align: left;
+    text-justify: auto;
+  }
+
+  .reader-footer {
+    padding: 0.65rem 0.75rem;
+    gap: 0.4rem;
+  }
+
+  .reader-nav-btn {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    min-height: 40px;
+  }
+
+  .reader-page-info {
+    font-size: 0.78rem;
+    gap: 0.4rem;
+  }
+
+  .reader-jump-box {
+    display: none;
+  }
+
+  .reader-toc-drawer {
+    width: 100%;
+    max-width: 100%;
+    border-right: none;
+  }
+
+  /* ========================================================================
+     STICKY COSMIC AUDIO PLAYER BAR ON MOBILE
+     Compact 2-row layout: Info + Controls at thumb reach
+     ======================================================================== */
+  .audio-player-bar {
+    bottom: 0.5rem;
+    width: calc(100% - 1rem);
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .audio-bar-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.45rem 0.5rem;
+  }
+
+  .audio-track-info {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    gap: 0.65rem;
+  }
+
+  .audio-thumb-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+  }
+
+  .audio-meta {
+    min-width: 0;
+  }
+
+  .audio-title {
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .audio-subtitle {
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .audio-right-controls {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .audio-vol-wrap {
+    display: none;
+  }
+
+  .audio-speed-btn {
+    padding: 2px 6px;
+    font-size: 0.72rem;
+  }
+
+  .audio-close-btn {
+    display: flex;
+    padding: 4px;
+    color: var(--text-muted);
+  }
+
+  .audio-center-controls {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .audio-button-row {
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .audio-play-main-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .audio-play-main-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .audio-btn#audio-rewind-btn, 
+  .audio-btn#audio-forward-btn {
+    padding: 2px;
+  }
+
+  .audio-btn#audio-rewind-btn svg, 
+  .audio-btn#audio-forward-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .btn-micro-text {
+    display: none;
+  }
+
+  .audio-timeline-wrap {
+    flex: 1;
+    gap: 0.35rem;
+  }
+
+  .audio-wave-bars {
+    display: none;
+  }
+
+  .audio-time {
+    font-size: 0.7rem;
+  }
+
+  .audio-progress-slider {
+    height: 6px;
+  }
+
+  /* Modals on Mobile */
+  .book-detail-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .book-detail-modal {
+    padding: 1.25rem 1rem;
+    max-height: 94vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-close-corner-btn {
+    top: 0.65rem;
+    right: 0.65rem;
+    width: 34px;
+    height: 34px;
+  }
+
+  .modal-cover-wrapper {
+    max-width: 160px;
+    margin: 0 auto;
+  }
+
+  .detail-title {
+    font-size: 1.35rem;
+  }
+
+  .detail-author {
+    font-size: 0.9rem;
+  }
+
+  .detail-meta-row {
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    gap: 0.4rem;
+  }
+
+  .detail-action-buttons {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.55rem;
+  }
+
+  .detail-action-buttons button {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .detail-download-row {
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    justify-content: flex-start;
+  }
+
+  .upload-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .upload-modal-container {
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-lg);
+    max-width: 100%;
+  }
+
+  .upload-heading {
+    font-size: 1.15rem;
+  }
+
+  .upload-dropzone {
+    padding: 2rem 1rem;
+  }
+
+  .dropzone-icon {
+    font-size: 2.2rem;
+  }
+
+  .dropzone-title {
+    font-size: 1rem;
+  }
+
+  .shelf-drawer {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .shelf-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .shelf-items-list {
+    padding: 1rem;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2.5rem 1rem 1.5rem;
+  }
+
   .footer-nav-groups {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .card-actions-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .card-delete-btn {
+    grid-column: 1 / -1;
+  }
+
+  .detail-title {
+    font-size: 1.25rem;
+  }
+
+  .detail-quote {
+    font-size: 0.88rem;
+    padding-left: 0.75rem;
+  }
+
+  .reader-header {
+    padding: 0.5rem 0.65rem;
+  }
+
+  .reader-body {
+    padding: 1rem 0.75rem;
+  }
+
+  .reader-footer {
+    padding: 0.5rem 0.65rem;
   }
 }
 
@@ -3178,8 +3919,9 @@ body {
 
 .reader-pdf-frame {
   width: 100%;
-  height: 65vh;
-  min-height: 500px;
+  height: calc(100% - 50px);
+  min-height: 72vh;
+  flex: 1;
   border: none;
   border-radius: var(--radius-md);
   background: #ffffff;
