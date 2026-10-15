@@ -1,6 +1,6 @@
 # 🪐 Libroverse — Perpustakaan Semesta Digital
 
-**Libroverse** adalah platform web modern untuk membaca, mendengarkan, dan mengunduh ribuan buku digital gratis (EPUB & PDF) serta audiobook di seluruh galaksi literasi. Dirancang dengan estetika *Cosmic Glassmorphism* yang memukau, responsif, dan siap di-deploy langsung ke **Vercel**.
+**Libroverse** adalah platform web modern untuk membaca, mendengarkan, dan mengunduh ribuan buku digital gratis (EPUB & PDF) s
 
 ![Libroverse Logo](/public/assets/libroverse-logo.jpg)
 
@@ -39,63 +39,3 @@
    - Dilengkapi `manifest.webmanifest` dan `sw.js` (Service Worker) untuk dipasang di layar ponsel atau desktop.
 
 ---
-
-## 🚀 Cara Menjalankan Secara Lokal
-
-1. **Instal dependensi**:
-   ```bash
-   npm install
-   ```
-
-2. **Jalankan server pengembangan**:
-   ```bash
-   npm run dev
-   ```
-   Buka peramban di [http://localhost:5173/](http://localhost:5173/).
-
-3. **Uji build produksi**:
-   ```bash
-   npm run build
-   ```
-
-4. **Crawling / Sinkronisasi Buku dari BDeBooks**:
-   ```bash
-   # Crawl dan unduh 10 buku + sampul lokal ke Libroverse:
-   npm run scrape
-
-   # Crawl hingga 40 buku sekaligus:
-   npm run scrape:all
-   ```
-
----
-
-## ☁️ Cara Deploy ke Vercel
-
-Proyek ini telah dikonfigurasi dengan [`vercel.json`](file:///e:/projects/rea-libroverse/vercel.json) dan build preset Vite standar.
-
-### Opsi 1: Lewat Vercel CLI
-```bash
-# 1. Login ke Vercel (jika belum)
-npx vercel login
-
-# 2. Deploy proyek
-npx vercel
-```
-
-### Opsi 2: Lewat Dashboard Vercel (GitHub)
-1. Buat repository baru di GitHub dan push folder ini:
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: initial Libroverse cosmic release"
-   git branch -M main
-   git remote add origin https://github.com/<username>/libroverse.git
-   git push -u origin main
-   ```
-2. Buka dashboard [Vercel](https://vercel.com/) -> **Add New Project**.
-3. Pilih repository `libroverse`.
-4. Vercel akan otomatis mendeteksi:
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-5. Klik **Deploy**!
