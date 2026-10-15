@@ -1,0 +1,20 @@
+{
+  "name": "Libroverse - Perpustakaan Semesta Digital",
+  "short_name": "Libroverse",
+  "description": "Jelajahi semesta buku digital gratis dalam format EPUB, PDF, dan Audiobook tanpa batas.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#090714",
+  "theme_color": "#7C3AED",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "/assets/libroverse-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

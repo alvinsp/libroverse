@@ -1,0 +1,20 @@
+{
+  "name": "libroverse",
+  "version": "1.0.0",
+  "description": "Libroverse - Perpustakaan Semesta Digital | The Universe of Free eBooks & Audiobooks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "scrape": "python scripts/scrape_bdebooks.py --limit 10 --download-covers --update-app",
+    "scrape:all": "python scripts/scrape_bdebooks.py --limit 40 --download-covers --update-app"
+  },
+  "devDependencies": {
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "jszip": "^3.10.2"
+  }
+}

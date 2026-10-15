@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Libroverse — Perpustakaan Semesta Digital | Baca & Unduh EPUB, PDF, Audiobook Gratis</title>
+    
+    <!-- SEO & Metadata -->
+    <meta name="description" content="Jelajahi ribuan buku digital, sastra nusantara, sci-fi antariksa, dan audiobook gratis dalam format EPUB & PDF di Libroverse. Platform membaca masa depan." />
+    <meta name="keywords" content="buku gratis, ebook gratis, baca buku online, epub download, pdf download, audiobook indonesia, perpustakaan digital, libroverse" />
+    <meta name="theme-color" content="#090714" />
+    <meta name="author" content="Libroverse" />
+    <link rel="canonical" href="https://libroverse.vercel.app/" />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Libroverse" />
+    <meta property="og:title" content="Libroverse — Perpustakaan Semesta Digital" />
+    <meta property="og:description" content="Baca, dengarkan, dan jelajahi ribuan buku digital gratis dalam format EPUB, PDF, dan Audiobook di seluruh galaksi." />
+    <meta property="og:image" content="/assets/libroverse-logo.jpg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Libroverse — Perpustakaan Semesta Digital" />
+    <meta name="twitter:description" content="Buku digital gratis tanpa batas dalam format EPUB & PDF dengan pengalaman membaca kosmik." />
+    <meta name="twitter:image" content="/assets/libroverse-logo.jpg" />
+
+    <!-- Favicon & PWA -->
+    <link rel="icon" type="image/jpeg" href="/assets/libroverse-logo.jpg" />
+    <link rel="apple-touch-icon" href="/assets/libroverse-logo.jpg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Google Fonts: Outfit, Plus Jakarta Sans, Literata -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Interactive Background Canvas (Starfield & Cosmic Dust) -->
+    <canvas id="cosmic-canvas" aria-hidden="true"></canvas>
+
+    <!-- App Wrapper -->
+    <div id="app" class="cosmic-app">
+
+      <!-- Navigation Header -->
+      <header class="navbar" id="navbar">
+        <div class="nav-container">
+          <!-- Brand Logo -->
+          <a href="#" class="brand-link" id="brand-logo" aria-label="Libroverse Beranda">
+            <div class="logo-wrapper">
+              <img src="/assets/libroverse-logo.jpg" alt="Logo Maskot Libroverse" class="brand-logo-img" />
+              <span class="logo-orbit-ring" aria-hidden="true"></span>
+            </div>
+            <div class="brand-text">
+              <span class="brand-title">Libroverse<span class="brand-sparkle">✦</span></span>
+              <span class="brand-tagline">Perpustakaan Semesta</span>
+            </div>
+          </a>
+
+          <!-- Global Search Input in Header -->
+          <div class="nav-search-bar" id="nav-search-wrapper">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              id="global-search-input" 
+              placeholder="Cari judul, penulis, rasi genre... (Tekan '/' untuk cari)" 
+              aria-label="Cari buku atau rasi bintang"
+              autocomplete="off"
+            />
+            <span class="search-shortcut-badge" aria-hidden="true">/</span>
+            <button type="button" class="search-clear-btn" id="search-clear-btn" aria-label="Hapus pencarian" hidden>×</button>
+          </div>
+
+          <!-- Header Actions -->
+          <div class="nav-actions">
+            <!-- Ambient Cosmic Chime Audio Switch -->
+            <button type="button" class="icon-action-btn" id="ambient-audio-btn" title="Nyalakan Musik Semesta Santai" aria-label="Toggle Musik Kosmik">
+              <span class="btn-icon" id="ambient-audio-icon">🪐</span>
+              <span class="btn-tooltip">Musik Kosmik</span>
+            </button>
+
+            <!-- Language Selector -->
+            <div class="lang-dropdown-wrapper">
+              <button type="button" class="lang-btn" id="lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="Pilih Bahasa">
+                <span class="lang-flag" id="current-lang-flag">🇮🇩</span>
+                <span class="lang-text" id="current-lang-code">ID</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="lang-menu" id="lang-menu" hidden>
+                <button type="button" class="lang-option active" data-lang="id"><span class="flag">🇮🇩</span> Bahasa Indonesia</button>
+                <button type="button" class="lang-option" data-lang="en"><span class="flag">🇬🇧</span> English</button>
+                <button type="button" class="lang-option" data-lang="bn"><span class="flag">🇧🇩</span> বাংলা (Bengali)</button>
+                <button type="button" class="lang-option" data-lang="es"><span class="flag">🇪🇸</span> Español</button>
+                <button type="button" class="lang-option" data-lang="jp"><span class="flag">🇯🇵</span> 日本語 (Japanese)</button>
+              </div>
+            </div>
+
+            <!-- Upload EPUB / PDF Button -->
+            <button type="button" class="upload-pill-btn" id="open-upload-btn" aria-label="Upload Buku EPUB atau PDF">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload EPUB/PDF</span>
+            </button>
+
+            <!-- My Cosmic Shelf Button -->
+            <button type="button" class="shelf-pill-btn" id="open-shelf-btn" aria-label="Buka Rak Buku Saya">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <span>Rak Kosmik</span>
+              <span class="shelf-count-badge" id="shelf-badge-count">0</span>
+            </button>
+
+            <!-- PWA Install Button -->
+            <button type="button" class="install-pwa-btn" id="install-pwa-btn" title="Pasang Aplikasi Libroverse di Layar Utama" hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              <span>Pasang App</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main id="main-content" class="main-content">
+
+        <!-- Hero Section -->
+        <section class="hero-section" id="hero">
+          <div class="hero-glow-blob hero-glow-1" aria-hidden="true"></div>
+          <div class="hero-glow-blob hero-glow-2" aria-hidden="true"></div>
+
+          <div class="hero-content">
+            <div class="hero-badge">
+              <span class="badge-sparkle">✨</span>
+              <span>Gerbang Literasi Bebas Tanpa Batas</span>
+              <span class="badge-pill">Gratis Selamanya</span>
+            </div>
+
+            <h1 class="hero-title">
+              Jelajahi Semesta Buku di <br />
+              <span class="gradient-text">Libroverse</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              Temukan ribuan karya sastra dunia, fiksi ilmiah antariksa, cerita nusantara, dan audiobook memukau. Baca daring langsung di peramban atau unduh file bersih <strong>EPUB & PDF</strong> kapan saja.
+            </p>
+
+            <!-- Interactive AI / Natural Prompt Finder -->
+            <div class="hero-search-box">
+              <div class="search-box-inner">
+                <span class="prompt-icon">🔮</span>
+                <input 
+                  type="text" 
+                  id="hero-prompt-input" 
+                  placeholder="Ketik alur cerita yang kamu bayangkan, suasana hati, atau tokoh impian..."
+                  aria-label="Cari buku berdasarkan suasana hati"
+                />
+                <button type="button" class="hero-explore-btn" id="hero-submit-btn">
+                  <span>Jelajahi</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+              </div>
+
+              <!-- Quick Mood Chips -->
+              <div class="hero-quick-chips">
+                <span class="chips-label">Inspirasi Galaksi:</span>
+                <button type="button" class="quick-chip" data-query="Sci-Fi">🚀 Antariksa & Waktu</button>
+                <button type="button" class="quick-chip" data-query="Nusantara">🌴 Sastra Nusantara</button>
+                <button type="button" class="quick-chip" data-query="Filsafat">🏛️ Filsafat & Ketenangan</button>
+                <button type="button" class="quick-chip" data-query="Fantasi">🔮 Sihir & Bintang</button>
+                <button type="button" class="quick-chip" data-query="audio">🎧 Audiobook Narasi</button>
+              </div>
+
+              <!-- Personal Upload Quick Action -->
+              <div class="hero-personal-upload-row">
+                <button type="button" class="hero-upload-shortcut-btn" id="hero-upload-btn">
+                  <span>📤 Upload Koleksi Buku Saya (EPUB / PDF)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Ribbon -->
+            <div class="hero-stats-ribbon">
+              <div class="stat-item">
+                <span class="stat-value">14,800+</span>
+                <span class="stat-label">Buku Digital Gratis</span>
+              </div>
+              <div class="stat-divider" aria-hidden="true"></div>
+              <div class="stat-item">
+                <span class="stat-value">2,400+</span>
+                <span class="stat-label">Audiobook Bersuara</span>
+              </div>
+              <div class="stat-divider" aria-hidden="true"></div>
+              <div class="stat-item">
+                <span class="stat-value">24+</span>
+                <span class="stat-label">Bahasa Dunia</span>
+              </div>
+              <div class="stat-divider" aria-hidden="true"></div>
+              <div class="stat-item">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">Domain Publik & Legal</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Featured Spotlight Card (Hero Side Highlight) -->
+          <div class="hero-spotlight">
+            <div class="spotlight-card" id="hero-spotlight-card">
+              <div class="spotlight-badge">★ Sorotan Bintang Hari Ini</div>
+              <div class="spotlight-cover-wrapper">
+                <img src="/assets/covers/celestial-odyssey.jpg" alt="Sampul The Celestial Odyssey" class="spotlight-cover-img" />
+                <div class="spotlight-cover-glow" aria-hidden="true"></div>
+              </div>
+              <div class="spotlight-details">
+                <span class="spotlight-genre">Sci-Fi & Antariksa</span>
+                <h3 class="spotlight-title">The Celestial Odyssey</h3>
+                <p class="spotlight-author">oleh Kaelen Vance</p>
+                <div class="spotlight-rating">
+                  <span class="stars">★★★★★</span>
+                  <span class="score">4.9</span>
+                  <span class="votes">(1.4k ulasan)</span>
+                </div>
+                <div class="spotlight-actions">
+                  <button type="button" class="btn-primary-glow" id="spotlight-read-btn" data-id="celestial-odyssey">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <span>Baca Cuplikan</span>
+                  </button>
+                  <button type="button" class="btn-secondary-glass" id="spotlight-listen-btn" data-id="celestial-odyssey">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Putar Audio</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Catalogue Explorer Section -->
+        <section class="catalogue-section" id="katalog">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <span class="section-kicker">✦ Rasi Bintang Pustaka</span>
+              <h2 class="section-title">Jelajahi Koleksi Semesta</h2>
+            </div>
+
+            <!-- Filters Bar (Formats & Sort) -->
+            <div class="filters-bar">
+              <!-- Format Filter Pills -->
+              <div class="format-filters" role="group" aria-label="Filter Format Buku">
+                <button type="button" class="format-btn active" data-format="all">Semua Format</button>
+                <button type="button" class="format-btn" data-format="epub">📖 EPUB</button>
+                <button type="button" class="format-btn" data-format="pdf">📄 PDF</button>
+                <button type="button" class="format-btn" data-format="audio">🎧 Audiobook</button>
+              </div>
+
+              <!-- Sorting Selector -->
+              <div class="sort-selector-wrapper">
+                <label for="sort-select" class="sr-only">Urutkan Koleksi</label>
+                <select id="sort-select" class="sort-select">
+                  <option value="popular">Paling Populer</option>
+                  <option value="rating">Rating Tertinggi</option>
+                  <option value="newest">Buku Terbaru</option>
+                  <option value="pages">Halaman Terpanjang</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Genre Carousel / Pills -->
+          <div class="genre-pills-container" id="genre-pills-list" role="tablist" aria-label="Kategori Genre">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Results Summary & Active Filters Status -->
+          <div class="results-meta-bar" id="results-meta-bar">
+            <span class="results-count" id="results-count-text">Menampilkan 8 buku kosmik</span>
+            <div class="active-filter-tags" id="active-filter-tags"></div>
+          </div>
+
+          <!-- Books Grid -->
+          <div class="books-grid" id="books-grid" aria-live="polite">
+            <!-- Dynamically generated book cards -->
+          </div>
+
+          <!-- Empty State (Hidden by default) -->
+          <div class="empty-state" id="empty-state" hidden>
+            <div class="empty-icon">🪐</div>
+            <h3 class="empty-title">Tidak ada bintang di koordinat ini</h3>
+            <p class="empty-text">Coba ubah kata kunci pencarian atau reset filter genre untuk menemukan buku lainnya.</p>
+            <button type="button" class="btn-primary-glow" id="reset-filters-btn">Reset Semua Filter</button>
+          </div>
+        </section>
+
+        <!-- Curated Constellation Showcase: Sastra Nusantara -->
+        <section class="curated-section" id="sastra-nusantara">
+          <div class="curated-card-banner">
+            <div class="curated-glow" aria-hidden="true"></div>
+            <div class="curated-content">
+              <span class="curated-badge">🌴 Mahakarya Nusantara</span>
+              <h2 class="curated-title">Warisan Sastra & Cerita Kepulauan Langit</h2>
+              <p class="curated-desc">
+                Dari hikayat pelaut Nusantara yang membaca arah lewat rasi bintang pari, hingga fiksi spekulatif masa depan pulau-pulau melayang. Nikmati karya sastra Indonesia pilihan dengan narasi suara berkualitas studio.
+              </p>
+              <div class="curated-actions">
+                <button type="button" class="btn-primary-glow" id="explore-nusantara-btn">
+                  <span>Telusuri Koleksi Nusantara</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="curated-banner-art">
+              <img src="/assets/covers/bumi-bintang.jpg" alt="Ilustrasi Bumi & Sang Bintang" class="curated-art-img" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Newsletter & Community Orbit -->
+        <section class="community-section" id="komunitas">
+          <div class="community-card">
+            <div class="community-icon-box">📚✨</div>
+            <h2 class="community-title">Dapatkan Kiriman Bintang Buku Baru</h2>
+            <p class="community-desc">
+              Satu surat semesta setiap minggu berisi rekomendasi buku gratis terbaik, ulasan astronomis, dan rilis audiobook terbaru langsung ke kotak masukmu.
+            </p>
+            <form class="community-form" id="newsletter-form">
+              <div class="form-input-group">
+                <input type="email" id="newsletter-email" placeholder="nama@semesta.com" required aria-label="Alamat Email" />
+                <button type="submit" class="btn-primary-glow">
+                  <span>Berlangganan</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                </button>
+              </div>
+              <p class="form-notice">Bebas spam. Berhenti berlangganan kapan pun dengan sekali klik.</p>
+            </form>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-container">
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <img src="/assets/libroverse-logo.jpg" alt="Logo Libroverse" class="footer-logo-img" />
+              <span class="footer-brand-title">Libroverse</span>
+            </div>
+            <p class="footer-tagline">
+              Perpustakaan digital lintas galaksi. Membuka akses buku berkualitas untuk semua insan di muka bumi dan sekitarnya.
+            </p>
+            <div class="footer-status-pill">
+              <span class="status-dot"></span>
+              <span>Semua Sistem Kosmik Online di Vercel</span>
+            </div>
+          </div>
+
+          <div class="footer-nav-groups">
+            <div class="footer-col">
+              <h3 class="footer-heading">Navigasi Pustaka</h3>
+              <a href="#hero">Beranda</a>
+              <a href="#katalog">Katalog Buku</a>
+              <a href="#katalog" data-format-link="audio">Audiobook</a>
+              <a href="#sastra-nusantara">Sastra Nusantara</a>
+              <a href="#" id="footer-shelf-link">Rak Kosmik Saya</a>
+            </div>
+
+            <div class="footer-col">
+              <h3 class="footer-heading">Format File</h3>
+              <span>EPUB (E-Reader & Ponsel)</span>
+              <span>PDF Bersih & Cetak</span>
+              <span>Streaming Audio Naratif</span>
+              <span>Web PWA Offline</span>
+            </div>
+
+            <div class="footer-col">
+              <h3 class="footer-heading">Kebijakan & Lisensi</h3>
+              <span>Domain Publik</span>
+              <span>Creative Commons</span>
+              <span>Bebas Royalti</span>
+              <span>Hak Cipta Terjaga</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>© 2026 Libroverse. Dirancang dengan cinta kosmik untuk pembaca semesta.</p>
+          <div class="footer-badges">
+            <span class="tech-badge">⚡ Vite Powered</span>
+            <span class="tech-badge">🚀 Vercel Ready</span>
+            <span class="tech-badge">🪐 PWA Enabled</span>
+          </div>
+        </div>
+      </footer>
+
+      <!-- ================= MODALS & DRAWERS ================= -->
+
+      <!-- 1. IN-BROWSER EBOOK READER MODAL -->
+      <div class="reader-modal-overlay" id="reader-modal" style="display: none !important;" role="dialog" aria-modal="true" aria-labelledby="reader-book-title" hidden>
+        <div class="reader-container" id="reader-container">
+          <!-- Reader Header -->
+          <div class="reader-header">
+            <div class="reader-meta">
+              <h2 class="reader-title" id="reader-book-title">Judul Buku</h2>
+              <span class="reader-chapter-title" id="reader-chapter-name">Bab 1</span>
+            </div>
+
+            <div class="reader-controls">
+              <!-- Font Size Controls -->
+              <div class="control-group">
+                <button type="button" class="reader-btn" id="reader-font-dec" title="Kecilkan Font" aria-label="Kecilkan Huruf">A−</button>
+                <span class="font-size-indicator" id="reader-font-val">18px</span>
+                <button type="button" class="reader-btn" id="reader-font-inc" title="Besarkan Font" aria-label="Besarkan Huruf">A+</button>
+              </div>
+
+              <!-- Font Family Toggle (Serif / Sans) -->
+              <button type="button" class="reader-btn" id="reader-font-family-btn" title="Ganti Gaya Font">
+                <span id="font-family-label">Serif</span>
+              </button>
+
+              <!-- Theme Toggle (Cosmic Dark / Sepia / Starlight Light) -->
+              <div class="control-group">
+                <button type="button" class="reader-theme-btn active" data-theme="cosmic" title="Tema Kosmik Gelap" aria-label="Tema Kosmik">🪐</button>
+                <button type="button" class="reader-theme-btn" data-theme="sepia" title="Tema Kertas Sepia" aria-label="Tema Sepia">📜</button>
+                <button type="button" class="reader-theme-btn" data-theme="light" title="Tema Siang Cerah" aria-label="Tema Cerah">☀️</button>
+              </div>
+
+              <!-- Close Reader Button -->
+              <button type="button" class="reader-close-btn" id="reader-close-btn" aria-label="Tutup Pembaca Buku">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Reading Progress Bar -->
+          <div class="reader-progress-track">
+            <div class="reader-progress-fill" id="reader-progress-bar" style="width: 0%"></div>
+          </div>
+
+          <!-- Reader Scrollable Body -->
+          <div class="reader-body" id="reader-body-content">
+            <!-- Book text injected here -->
+          </div>
+
+          <!-- Reader Footer Navigation -->
+          <div class="reader-footer">
+            <button type="button" class="reader-nav-btn" id="reader-prev-chapter" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+              <span>Bab Sebelumnya</span>
+            </button>
+            <div class="reader-page-info">
+              <span id="reader-page-counter">Bab 1 dari 2</span>
+            </div>
+            <button type="button" class="reader-nav-btn" id="reader-next-chapter">
+              <span>Bab Berikutnya</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. STICKY COSMIC AUDIO PLAYER -->
+      <div class="audio-player-bar" id="audio-player-bar" hidden>
+        <div class="audio-bar-inner">
+          <!-- Book Info & Artwork -->
+          <div class="audio-track-info">
+            <div class="audio-thumb-wrap">
+              <img src="/assets/covers/celestial-odyssey.jpg" alt="Artwork Audiobook" id="audio-thumb-img" class="audio-thumb" />
+              <div class="audio-pulse-ring" id="audio-pulse-ring"></div>
+            </div>
+            <div class="audio-meta">
+              <span class="audio-title" id="audio-title-text">The Celestial Odyssey</span>
+              <span class="audio-subtitle" id="audio-author-text">Kaelen Vance • Narasi Kosmik</span>
+            </div>
+          </div>
+
+          <!-- Center Audio Controls -->
+          <div class="audio-center-controls">
+            <div class="audio-button-row">
+              <button type="button" class="audio-btn" id="audio-rewind-btn" title="Mundur 15 detik" aria-label="Mundur 15 detik">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
+                <span class="btn-micro-text">15s</span>
+              </button>
+              
+              <button type="button" class="audio-play-main-btn" id="audio-play-toggle" title="Putar / Jeda" aria-label="Putar atau Jeda">
+                <svg id="audio-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <svg id="audio-pause-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" hidden><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+
+              <button type="button" class="audio-btn" id="audio-forward-btn" title="Maju 15 detik" aria-label="Maju 15 detik">
+                <span class="btn-micro-text">15s</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>
+              </button>
+            </div>
+
+            <!-- Waveform & Progress Slider -->
+            <div class="audio-timeline-wrap">
+              <span class="audio-time" id="audio-current-time">00:00</span>
+              
+              <!-- Animated Soundwave Canvas -->
+              <div class="audio-wave-bars" id="audio-wave-bars">
+                <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+                <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+                <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+              </div>
+
+              <input type="range" class="audio-progress-slider" id="audio-progress-slider" min="0" max="100" value="0" aria-label="Posisi Durasi Audiobook" />
+              <span class="audio-time" id="audio-total-time">05:20</span>
+            </div>
+          </div>
+
+          <!-- Right Controls: Speed, Volume, Close -->
+          <div class="audio-right-controls">
+            <!-- Playback Speed -->
+            <button type="button" class="audio-speed-btn" id="audio-speed-btn" title="Kecepatan Putar">1.0x</button>
+
+            <!-- Volume Slider -->
+            <div class="audio-vol-wrap">
+              <span class="vol-icon">🔊</span>
+              <input type="range" class="audio-vol-slider" id="audio-volume-slider" min="0" max="1" step="0.05" value="0.8" aria-label="Volume Suara" />
+            </div>
+
+            <!-- Close Audio Bar -->
+            <button type="button" class="audio-btn audio-close-btn" id="audio-bar-close" title="Tutup Pemutar Audio" aria-label="Tutup Audio">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. MY COSMIC SHELF DRAWER -->
+      <div class="shelf-drawer-backdrop" id="shelf-drawer-backdrop" style="display: none !important;" hidden></div>
+      <aside class="shelf-drawer" id="shelf-drawer" style="display: none !important;" role="dialog" aria-modal="true" aria-labelledby="shelf-title" hidden>
+        <div class="shelf-header">
+          <div class="shelf-header-title">
+            <span class="shelf-icon">🪐</span>
+            <h2 id="shelf-title" class="shelf-heading">Rak Kosmik Saya</h2>
+          </div>
+          <button type="button" class="shelf-close-btn" id="shelf-close-btn" aria-label="Tutup Rak Kosmik">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Shelf Tabs -->
+        <div class="shelf-tabs">
+          <button type="button" class="shelf-tab-btn active" data-tab="all">Semua Buku (<span id="shelf-tab-count">0</span>)</button>
+          <button type="button" class="shelf-tab-btn" data-tab="reading">Sedang Dibaca</button>
+          <button type="button" class="shelf-tab-btn" data-tab="finished">Selesai</button>
+        </div>
+
+        <!-- Shelf Items List -->
+        <div class="shelf-items-list" id="shelf-items-list">
+          <!-- Dynamically populated or empty -->
+        </div>
+
+        <!-- Shelf Footer -->
+        <div class="shelf-footer">
+          <button type="button" class="shelf-clear-btn" id="shelf-clear-all-btn">Kosongkan Rak</button>
+          <button type="button" class="btn-primary-glow" id="shelf-browse-more-btn">Tambah Buku Baru</button>
+        </div>
+      </aside>
+
+      <!-- 4. BOOK DETAIL POPUP MODAL -->
+      <div class="book-detail-modal-overlay" id="book-detail-modal" style="display: none !important;" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" hidden>
+        <div class="book-detail-modal" id="book-detail-container">
+          <button type="button" class="modal-close-corner-btn" id="detail-modal-close" aria-label="Tutup Detail Buku">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+
+          <div class="modal-grid">
+            <!-- Cover & Badges -->
+            <div class="modal-cover-col">
+              <div class="modal-cover-wrapper" id="detail-cover-wrapper">
+                <img src="" alt="" id="detail-cover-img" class="modal-cover-img" />
+              </div>
+              <div class="modal-format-tags" id="detail-format-tags"></div>
+            </div>
+
+            <!-- Metadata & Synopsis -->
+            <div class="modal-info-col">
+              <span class="detail-genre-pill" id="detail-genre-pill">Genre</span>
+              <h2 class="detail-title" id="detail-modal-title">Judul Buku</h2>
+              <p class="detail-author" id="detail-author-text">oleh Penulis</p>
+
+              <div class="detail-meta-row">
+                <span class="detail-meta-item" id="detail-rating-text">★ 4.9 (1.2k)</span>
+                <span class="detail-dot">•</span>
+                <span class="detail-meta-item" id="detail-pages-text">380 Halaman</span>
+                <span class="detail-dot">•</span>
+                <span class="detail-meta-item" id="detail-readtime-text">5 jam baca</span>
+              </div>
+
+              <blockquote class="detail-quote" id="detail-quote-box">
+                "Kutipan berkesan dari buku..."
+              </blockquote>
+
+              <div class="detail-synopsis-box">
+                <h4 class="synopsis-title">Sinopsis Semesta</h4>
+                <p class="synopsis-text" id="detail-synopsis-text"></p>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="detail-action-buttons">
+                <button type="button" class="btn-primary-glow btn-lg" id="detail-read-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Baca Sekarang</span>
+                </button>
+                <button type="button" class="btn-secondary-glass btn-lg" id="detail-listen-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Dengarkan Audiobook</span>
+                </button>
+                <button type="button" class="btn-shelf-action" id="detail-toggle-shelf-btn">
+                  <span id="detail-shelf-icon">🔖</span>
+                  <span id="detail-shelf-label">Simpan ke Rak</span>
+                </button>
+              </div>
+
+              <!-- Download Options Dropdown / Row -->
+              <div class="detail-download-row">
+                <span class="download-label">Unduh Gratis:</span>
+                <button type="button" class="download-pill-btn" id="detail-download-epub" data-format="epub">
+                  <span>⬇ EPUB (E-Reader)</span>
+                </button>
+                <button type="button" class="download-pill-btn" id="detail-download-pdf" data-format="pdf">
+                  <span>⬇ PDF Lengkap</span>
+                </button>
+                <button type="button" class="download-pill-btn" id="detail-share-btn">
+                  <span>🔗 Bagikan</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. UPLOAD EPUB / PDF BOOK MODAL -->
+      <div class="upload-modal-overlay" id="upload-modal" style="display: none !important;" role="dialog" aria-modal="true" aria-labelledby="upload-modal-title" hidden>
+        <div class="upload-modal-container">
+          <div class="upload-modal-header">
+            <div class="upload-modal-title-row">
+              <span class="upload-icon">📤</span>
+              <h2 id="upload-modal-title" class="upload-heading">Upload Your EPUB / PDF Book</h2>
+            </div>
+            <button type="button" class="modal-close-corner-btn" id="upload-modal-close" aria-label="Tutup Modal Upload">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+
+          <div class="upload-dropzone" id="upload-dropzone">
+            <input type="file" id="book-file-input" accept=".epub,.pdf,.txt" class="sr-only" />
+            <div class="dropzone-content">
+              <div class="dropzone-icon">📚</div>
+              <h3 class="dropzone-title">Drag & drop your EPUB, PDF or TXT file here</h3>
+              <p class="dropzone-sub">or click to browse files from your computer or phone</p>
+              <button type="button" class="btn-primary-glow" id="dropzone-browse-btn">
+                <span>Browse File...</span>
+              </button>
+              <span class="dropzone-badge">Instant In-Browser EPUB Parser Powered by JSZip</span>
+            </div>
+          </div>
+
+          <!-- Upload Loading / Parsing Indicator -->
+          <div class="upload-loading-box" id="upload-loading-box" hidden style="text-align: center; padding: 2rem;">
+            <div class="upload-loading-spinner"></div>
+            <p id="upload-loading-text" style="margin-top: 1rem; color: var(--accent-cyan); font-weight: 600;">Mengekstrak dan memproses file buku...</p>
+          </div>
+
+          <!-- Uploaded File Preview (Hidden initially) -->
+          <div class="upload-preview-box" id="upload-preview-box" hidden>
+            <div class="preview-info-row">
+              <span class="preview-icon" id="preview-cover-thumb">📖</span>
+              <div class="preview-text">
+                <h4 id="preview-book-title" class="preview-title">Book Title</h4>
+                <span id="preview-book-meta" class="preview-meta">0 KB • EPUB File</span>
+              </div>
+            </div>
+
+            <!-- Optional Metadata Editing -->
+            <div class="upload-edit-form">
+              <div class="upload-field-row">
+                <label for="upload-input-title" class="upload-field-label">Judul Buku (Title):</label>
+                <input type="text" id="upload-input-title" class="upload-field-input" placeholder="Judul Buku" />
+              </div>
+              <div class="upload-field-row">
+                <label for="upload-input-author" class="upload-field-label">Penulis / Pengarang (Author):</label>
+                <input type="text" id="upload-input-author" class="upload-field-input" placeholder="Nama Penulis" />
+              </div>
+              <div class="upload-field-row">
+                <label for="upload-input-genre" class="upload-field-label">Kategori / Rak:</label>
+                <select id="upload-input-genre" class="upload-field-input">
+                  <option value="Koleksi Pribadi">Koleksi Pribadi (Personal)</option>
+                  <option value="Klasik Dunia">Klasik Dunia (World Classics)</option>
+                  <option value="Sci-Fi & Antariksa">Sci-Fi & Antariksa</option>
+                  <option value="Filsafat & Sains">Filsafat & Sains</option>
+                  <option value="Misteri & Thriller">Misteri & Thriller</option>
+                  <option value="Sastra Nusantara">Sastra Nusantara</option>
+                  <option value="Fantasi Epik">Fantasi Epik</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="preview-actions">
+              <button type="button" class="btn-primary-glow" id="preview-read-now-btn">
+                <span>📖 Baca Sekarang</span>
+              </button>
+              <button type="button" class="btn-secondary-glass" id="preview-save-shelf-btn">
+                <span>💾 Simpan ke Koleksi Saya</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notification Container -->
+      <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    </div>
+
+    <!-- Main Module Script -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
