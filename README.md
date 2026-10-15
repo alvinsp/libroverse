@@ -70,3 +70,11 @@
 
 Proyek ini telah dikonfigurasi dengan [`vercel.json`](file:///e:/projects/rea-libroverse/vercel.json) dan build preset Vite standar.
 Otomatis terhubung dengan GitHub dan siap dideploy langsung di dashboard Vercel.
+
+---
+
+## 📋 Pelacakan Masalah & Issues Solved
+
+Seluruh kendala teknis, perbaikan tipografi/responsivitas, pemisahan bab otomatis, dan refaktorisasi arsitektur dicatat dan telah diselesaikan (**[x] Solved**) di berkas:
+👉 **[ISSUES.md](file:///e:/projects/rea-libroverse/ISSUES.md)**
+
