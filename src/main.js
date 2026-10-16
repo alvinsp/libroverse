@@ -77,10 +77,34 @@ function setupPwa() {
     }
   });
 
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
-      console.log('SW registration note:', err);
-    });
+  if ('serviceWorker' in navigator) {
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      // In local development, unregister service workers to avoid stale cache confusion
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        for (const reg of regs) {
+          reg.unregister();
+        }
+      });
+      if ('caches' in window) {
+        caches.keys().then((keys) => {
+          for (const key of keys) caches.delete(key);
+        });
+      }
+    } else if (location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        reg.update();
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker?.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          });
+        });
+      }).catch((err) => {
+        console.log('SW registration note:', err);
+      });
+    }
   }
 }
 
