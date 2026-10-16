@@ -106,8 +106,13 @@ export default {
   reader_bookmark_removed: 'Tanda halaman dihapus',
   reader_bookmarks_tab: '🔖 Bookmark',
   reader_chapters_tab: '📑 Daftar Bab',
-  reader_no_bookmarks: 'Belum ada halaman yang ditandai.',
   pdf_open_new_tab: '↗ Buka di Tab Baru',
-  pdf_download: '📥 Unduh Berkas PDF'
+  pdf_download: '📥 Unduh Berkas PDF',
+  reader_bookmark_modal_title: '🔖 Koleksi Bookmark Saya',
+  reader_bookmark_list_btn: 'Bookmark Saya',
+  reader_ribbon_tooltip: 'Klik untuk tandai halaman ini',
+  reader_auto_resume_toast: 'Melanjutkan membaca "{title}" di Halaman {page}',
+  reader_resume_btn: 'Lanjutkan Membaca'
 };
+
 

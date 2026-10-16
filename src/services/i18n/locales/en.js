@@ -106,8 +106,13 @@ export default {
   reader_bookmark_removed: 'Bookmark removed',
   reader_bookmarks_tab: '🔖 Bookmarks',
   reader_chapters_tab: '📑 Chapters List',
-  reader_no_bookmarks: 'No bookmarks saved yet.',
   pdf_open_new_tab: '↗ Open in New Tab',
-  pdf_download: '📥 Download PDF File'
+  pdf_download: '📥 Download PDF File',
+  reader_bookmark_modal_title: '🔖 My Saved Bookmarks',
+  reader_bookmark_list_btn: 'My Bookmarks',
+  reader_ribbon_tooltip: 'Click to bookmark this page',
+  reader_auto_resume_toast: 'Resumed reading "{title}" on Page {page}',
+  reader_resume_btn: 'Resume Reading'
 };
+
 

@@ -18,6 +18,7 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
 | #8 | [Kode Monolitik Belum Menerapkan Clean Architecture](#issue-8-arsitektur-kode-monolitik-belum-menerapkan-clean-architecture) | Architecture / Refactor | `[x] Solved` | `src/core/`, `src/services/`, `src/ui/` |
 | #9 | [Normalisasi EPUB & Eliminasi Judul Duplikat](#issue-9-normalisasi-epub-eliminasi-judul-duplikat-dan-tipografi-seperti-the-celestial-odyssey) | Parser / Typography | `[x] Solved` | `src/services/parser/epubNormalizer.js`, `src/style.css` |
 | #10 | [Zoom Out 50% di HP, Ergonomi Mobile, In-Reader Search & Bookmark](#issue-10-zoom-out-50-di-hp-ergonomi-mobile-in-reader-search--bookmark) | Mobile / UX / Feature | `[x] Solved` | `src/ui/reader/readerView.js`, `src/style.css`, `index.html` |
+| #11 | [Bookmark Menonjol, Kompaksi Frame Header/H1/Footer di HP, & Auto-Resume Halaman saat Buka Browser](#issue-11-bookmark-menonjol-kompaksi-frame-headerh1footer-di-hp--auto-resume-halaman-saat-buka-browser) | Mobile / UX / Persistence | `[x] Solved` | `src/ui/reader/readerView.js`, `src/style.css`, `src/main.js` |
 
 ---
 
@@ -182,5 +183,35 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
 
 ---
 
+### Issue #11: Bookmark Menonjol, Kompaksi Frame Header/H1/Footer di HP, & Auto-Resume Halaman saat Buka Browser
+- **Laporan Pengguna**:
+  - *"dimana bookmark nya"* & *"- bookmark buatkan fiturnya"*
+  - *"- digambar terlalu besar ketika baca di hp"*
+  - *"- misal aku keluar browser ketika baca halaman 2, bisakah ketika satu device misal keluar browser terus open lagi tetap bisa masuk automatis tetap di halaman 2"*
+- **Penyebab**:
+  1. Fitur bookmark sebelumnya berada di dalam menu atau kurang menonjol di viewport sempit ponsel, sehingga pengguna bingung mencari di mana tombol bookmark dan koleksi bookmark berada.
+  2. Judul bab (`h1.reader-h1`) dan judul buku di header pada buku ber-nama panjang (seperti *The Dialogues of Seneca: On the Shortness of Life*) pecah menjadi 4 baris besar di layar ponsel. Ditambah footer yang menampilkan judul bab panjang secara berulang, menghabiskan >80% ruang vertikal layar dan menyisakan sedikit ruang untuk teks buku.
+  3. Ketika pengguna menutup tab atau browser lalu membukanya kembali di perangkat yang sama, aplikasi tidak otomatis menyambung kembali (*auto-resume*) ke halaman aktif terakhir yang dibaca (misalnya Halaman 2).
+- **Solusi**:
+  - [x] **Sistem Bookmark Menonjol & Terpadu (Unmissable Bookmarks)**:
+    - Membagi header pembaca menjadi 2 tingkat teratur:
+      - **Tingkat Atas**: Judul buku yang rapi (terpotong elipsis jika panjang) berdampingan langsung dengan tombol **`[ 🔖 Tandai ]`** dan tombol koleksi **`[ ★ Bookmark (N) ]`** lengkap dengan badge jumlah.
+      - **Tingkat Bawah**: Toolbar kontrol yang dapat digulir horizontal mulus (*touch scrollable*).
+    - Menambahkan **Pita Bookmark Sudut Halaman (`#reader-corner-ribbon`)** tepat di pojok kanan atas kertas buku digital yang dapat disentuh langsung untuk menandai halaman dengan animasi bintang emas.
+    - Menghadirkan **Laci Khusus Bookmark (`#reader-bookmarks-drawer`)** yang dapat dibuka langsung lewat tombol `[ ★ Bookmark (N) ]`, menampilkan daftar halaman yang ditandai, kutipan teks, tombol lompat ke halaman tersebut, dan tombol hapus.
+  - [x] **Kompaksi Ekstrem Frame & Tipografi Mobile di Layar HP**:
+    - Memadatkan ukuran judul bab `h1.reader-h1` di HP menjadi `1.12rem` rata kiri dengan margin rapat (`0.25rem 0 0.55rem`), sehingga hanya memakan 1-2 baris minimalis.
+    - Memperkecil padding vertikal kontainer pembaca (`.reader-body: 0.45rem 0.55rem`) agar ruang baca teks buku mendominasi layar.
+    - Menyembunyikan judul bab panjang di footer pada mobile (`.page-chap-sub { display: none !important; }`), sehingga footer hanya menampilkan indikator bersih satu baris (`[ < Sebelumnya ]  Hal. 2 dari 5  [ Berikutnya > ]`) dengan tinggi < 38px tanpa patahan baris.
+    - Memperkaya konten buku Seneca (*The Dialogues of Seneca*) menjadi 4 bab penuh autentik sehingga terpaginasi sempurna lintas halaman.
+  - [x] **Auto-Resume Halaman Otomatis saat Reopen Browser**:
+    - Menyimpan sesi baca aktif (`LAST_READ_SESSION`: `bookId`, `pageIndex`, `autoResume: true`) setiap kali pengguna membalik halaman.
+    - Di `src/main.js`, saat aplikasi dimuat kembali (`DOMContentLoaded`), sistem mendeteksi sesi baca aktif dan langsung membuka kembali pembaca buku secara otomatis tepat di halaman terakhir (misal Halaman 2) disertai notifikasi ramah *Toast*: `"Melanjutkan membaca 'The Dialogues of Seneca' di Halaman 2"`.
+    - Status `autoResume` hanya dinonaktifkan jika pengguna secara eksplisit menekan tombol tutup `✕` atau tombol `Escape`.
+- **Status**: `[x] Solved`
+
+---
+
 *Terakhir diperbarui: 2026-10-16 • Semua isu terverifikasi dan berstatus `[x] Solved`.*
+
 

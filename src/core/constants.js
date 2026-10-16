@@ -9,7 +9,9 @@ export const STORAGE_KEYS = {
   READER_FONT_FAMILY: 'libroverse_reader_ff',
   READER_THEME: 'libroverse_reader_theme',
   READER_ZOOM: 'libroverse_reader_zoom',
-  BOOKMARKS: 'libroverse_bookmarks'
+  BOOKMARKS: 'libroverse_bookmarks',
+  LAST_READ_SESSION: 'libroverse_last_read_session',
+  BOOK_PROGRESS_PREFIX: 'libroverse_progress_'
 };
 
 export const DB_CONFIG = {

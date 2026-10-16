@@ -405,22 +405,40 @@
         <div class="reader-container" id="reader-container">
           <!-- Reader Header -->
           <div class="reader-header">
-            <div class="reader-meta">
-              <h2 class="reader-title" id="reader-book-title">Judul Buku</h2>
-              <span class="reader-chapter-title" id="reader-chapter-name">Bab 1</span>
+            <!-- Top Row: Book Title + Prominent Bookmark Controls + Close -->
+            <div class="reader-header-top">
+              <div class="reader-meta">
+                <h2 class="reader-title" id="reader-book-title">Judul Buku</h2>
+                <span class="reader-chapter-title" id="reader-chapter-name">Bab 1</span>
+              </div>
+
+              <div class="reader-top-actions">
+                <!-- Direct Bookmark Toggle Button -->
+                <button type="button" class="reader-top-btn" id="reader-bookmark-btn" title="Tandai Halaman Ini (Bookmark)" aria-label="Bookmark Halaman">
+                  <span id="reader-bookmark-icon">🔖</span>
+                  <span class="reader-top-btn-label" data-i18n="reader_bookmark_btn">Tandai</span>
+                </button>
+
+                <!-- Direct Bookmarks Collection Drawer Button -->
+                <button type="button" class="reader-top-btn" id="reader-bookmarks-list-btn" title="Lihat Koleksi Bookmark Saya" aria-label="Koleksi Bookmark">
+                  <span class="star-icon">★</span>
+                  <span class="reader-top-btn-label" data-i18n="reader_bookmark_list_btn">Bookmark</span>
+                  <span class="reader-tab-badge" id="reader-bookmark-count">0</span>
+                </button>
+
+                <!-- Close Reader Button -->
+                <button type="button" class="reader-close-btn" id="reader-close-btn" aria-label="Tutup Pembaca Buku">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </div>
             </div>
 
-            <div class="reader-controls">
+            <!-- Bottom Row: Controls Toolbar (Horizontally Scrollable on Mobile) -->
+            <div class="reader-controls" id="reader-controls-bar">
               <!-- Search In Book -->
               <button type="button" class="reader-btn" id="reader-search-btn" title="Cari Kata di Buku" aria-label="Cari Teks">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <span class="btn-hide-mobile" data-i18n="reader_search_btn">Cari</span>
-              </button>
-
-              <!-- Bookmark Toggle -->
-              <button type="button" class="reader-btn" id="reader-bookmark-btn" title="Tandai Halaman Ini" aria-label="Bookmark Halaman">
-                <span id="reader-bookmark-icon">🔖</span>
-                <span class="btn-hide-mobile" data-i18n="reader_bookmark_btn">Tandai</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span data-i18n="reader_search_btn">Cari</span>
               </button>
 
               <!-- Table of Contents Toggle -->
@@ -436,8 +454,8 @@
               </div>
 
               <!-- Quick 50% Mobile Zoom Toggle Pill -->
-              <button type="button" class="reader-btn reader-quick-zoom-btn" id="reader-quick-zoom-50" title="Zoom Out 50% (Sangat Pas di HP)">
-                <span>50%</span>
+              <button type="button" class="reader-btn reader-quick-zoom-btn" id="reader-quick-zoom-50" title="Zoom Out 50% (Sangat Pas di Layar HP)">
+                <span>50% HP</span>
               </button>
 
               <!-- Reading Mode Toggle (Halaman vs Gulir) -->
@@ -448,7 +466,7 @@
               <!-- Font Size Controls -->
               <div class="control-group">
                 <button type="button" class="reader-btn" id="reader-font-dec" title="Kecilkan Font" aria-label="Kecilkan Huruf">A−</button>
-                <span class="font-size-indicator" id="reader-font-val">18px</span>
+                <span class="font-size-indicator" id="reader-font-val">14px</span>
                 <button type="button" class="reader-btn" id="reader-font-inc" title="Besarkan Font" aria-label="Besarkan Huruf">A+</button>
               </div>
 
@@ -468,11 +486,6 @@
               <button type="button" class="reader-btn reader-expand-btn" id="reader-expand-btn" title="Perbesar Layar Baca Penuh" aria-label="Perbesar Layar">
                 <svg id="reader-expand-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
                 <svg id="reader-compress-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" hidden><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>
-              </button>
-
-              <!-- Close Reader Button -->
-              <button type="button" class="reader-close-btn" id="reader-close-btn" aria-label="Tutup Pembaca Buku">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
             </div>
           </div>
@@ -496,7 +509,7 @@
 
           <!-- Reader Content Layout -->
           <div class="reader-content-layout">
-            <!-- Slide-out Table of Contents & Bookmarks Drawer -->
+            <!-- 1. Slide-out Table of Contents Drawer -->
             <div class="reader-toc-drawer" id="reader-toc-drawer" hidden>
               <div class="reader-toc-header">
                 <div class="reader-toc-tabs">
@@ -505,7 +518,7 @@
                   </button>
                   <button type="button" class="reader-toc-tab-btn" id="reader-toc-tab-bookmarks" data-tab="bookmarks">
                     <span data-i18n="reader_bookmarks_tab">🔖 Bookmark</span>
-                    <span class="reader-tab-badge" id="reader-bookmark-count">0</span>
+                    <span class="reader-tab-badge" id="reader-toc-bookmark-count">0</span>
                   </button>
                 </div>
                 <button type="button" class="reader-btn" id="reader-toc-close-btn" aria-label="Tutup Daftar Isi">✕</button>
@@ -514,6 +527,17 @@
                 <!-- Injected dynamically -->
               </div>
               <div class="reader-bookmarks-list" id="reader-bookmarks-list" hidden>
+                <!-- Bookmarks injected dynamically -->
+              </div>
+            </div>
+
+            <!-- 2. Dedicated Slide-out Bookmarks Drawer -->
+            <div class="reader-bookmarks-drawer" id="reader-bookmarks-drawer" hidden>
+              <div class="reader-bookmarks-header">
+                <h4 data-i18n="reader_bookmark_modal_title">🔖 Koleksi Bookmark Saya</h4>
+                <button type="button" class="reader-btn" id="reader-bookmarks-close-btn" aria-label="Tutup Bookmark">✕</button>
+              </div>
+              <div class="reader-bookmarks-list" id="reader-bookmarks-modal-list">
                 <!-- Bookmarks injected dynamically -->
               </div>
             </div>

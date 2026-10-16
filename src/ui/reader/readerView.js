@@ -45,7 +45,7 @@ export function applyReaderZoom(zoomLevel, showNotice = false) {
 }
 
 // ============================================================================
-// BOOKMARK SYSTEM
+// BOOKMARK SYSTEM (RIBON, DRAWER, PERSISTENCE)
 // ============================================================================
 export function isCurrentPageBookmarked() {
   if (!state.currentReadingBook) return false;
@@ -58,6 +58,8 @@ export function updateBookmarkUI() {
   const bookmarkBtn = document.getElementById('reader-bookmark-btn');
   const icon = document.getElementById('reader-bookmark-icon');
   const countEl = document.getElementById('reader-bookmark-count');
+  const tocCountEl = document.getElementById('reader-toc-bookmark-count');
+  const ribbon = document.getElementById('reader-corner-ribbon');
   const isBookmarked = isCurrentPageBookmarked();
 
   if (bookmarkBtn) {
@@ -66,9 +68,17 @@ export function updateBookmarkUI() {
   if (icon) {
     icon.textContent = isBookmarked ? '★' : '🔖';
   }
-  if (countEl && state.currentReadingBook) {
+  if (ribbon) {
+    ribbon.classList.toggle('active', isBookmarked);
+    const ribbonIcon = ribbon.querySelector('.ribbon-icon');
+    if (ribbonIcon) ribbonIcon.textContent = isBookmarked ? '★' : '🔖';
+    ribbon.title = isBookmarked ? 'Halaman ini telah ditandai' : 'Tandai halaman ini (Bookmark)';
+  }
+
+  if (state.currentReadingBook) {
     const bookBookmarks = state.bookmarks.filter((b) => b.bookId === state.currentReadingBook.id);
-    countEl.textContent = String(bookBookmarks.length);
+    if (countEl) countEl.textContent = String(bookBookmarks.length);
+    if (tocCountEl) tocCountEl.textContent = String(bookBookmarks.length);
   }
 }
 
@@ -100,7 +110,7 @@ export function toggleCurrentPageBookmark() {
       excerpt: excerpt,
       createdAt: new Date().toISOString()
     });
-    showToast(t('reader_bookmark_added'), '⭐');
+    showToast(t('reader_bookmark_added') + ` (Halaman ${pageIdx + 1})`, '⭐');
   }
 
   localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(state.bookmarks));
@@ -108,61 +118,87 @@ export function toggleCurrentPageBookmark() {
   renderBookmarksList();
 }
 
+export function openBookmarksDrawer() {
+  const drawer = document.getElementById('reader-bookmarks-drawer');
+  const tocDrawer = document.getElementById('reader-toc-drawer');
+  if (tocDrawer) tocDrawer.hidden = true;
+  document.getElementById('reader-toc-btn')?.classList.remove('active');
+
+  if (drawer) {
+    drawer.hidden = false;
+    renderBookmarksList();
+  }
+}
+
+export function closeBookmarksDrawer() {
+  const drawer = document.getElementById('reader-bookmarks-drawer');
+  if (drawer) drawer.hidden = true;
+}
+
 export function renderBookmarksList() {
-  const listEl = document.getElementById('reader-bookmarks-list');
-  if (!listEl || !state.currentReadingBook) return;
+  const listContainers = [
+    document.getElementById('reader-bookmarks-modal-list'),
+    document.getElementById('reader-bookmarks-list')
+  ].filter(Boolean);
+
+  if (listContainers.length === 0 || !state.currentReadingBook) return;
 
   const bookBookmarks = state.bookmarks.filter((b) => b.bookId === state.currentReadingBook.id);
-  if (bookBookmarks.length === 0) {
-    listEl.innerHTML = `
-      <div class="reader-empty-state">
-        <span class="empty-icon">🔖</span>
-        <p>${t('reader_no_bookmarks')}</p>
-      </div>
-    `;
-    return;
-  }
 
-  listEl.innerHTML = bookBookmarks
-    .map(
-      (bm) => `
-      <div class="reader-bookmark-item" data-page="${bm.pageIndex}">
-        <div class="reader-bookmark-info">
-          <div class="reader-bookmark-title">
-            <span class="bookmark-icon">★</span>
-            <span class="bookmark-chapter">${escapeHtml(bm.chapterTitle)}</span>
-            <span class="reader-toc-page-badge">${state.currentLang === 'en' ? 'Page' : 'Hal.'} ${bm.pageIndex + 1}</span>
-          </div>
-          <p class="reader-bookmark-snippet">"${escapeHtml(bm.excerpt)}"</p>
+  listContainers.forEach((listEl) => {
+    if (bookBookmarks.length === 0) {
+      listEl.innerHTML = `
+        <div class="reader-empty-state">
+          <span class="empty-icon">🔖</span>
+          <p>${t('reader_no_bookmarks')}</p>
+          <span style="font-size: 0.75rem; opacity: 0.7;">Tekan tombol "🔖 Tandai" di atas atau pita sudut halaman untuk menyimpan halaman favoritmu.</span>
         </div>
-        <button type="button" class="reader-bookmark-del-btn" data-bm-id="${bm.id}" title="Hapus Bookmark">✕</button>
-      </div>
-    `
-    )
-    .join('');
+      `;
+      return;
+    }
 
-  listEl.querySelectorAll('.reader-bookmark-item').forEach((item) => {
-    item.addEventListener('click', (e) => {
-      if (e.target.closest('.reader-bookmark-del-btn')) return;
-      const targetP = parseInt(item.dataset.page, 10);
-      if (!isNaN(targetP)) {
-        openReaderModal(state.currentReadingBook, targetP);
-        const drawer = document.getElementById('reader-toc-drawer');
-        if (drawer) drawer.hidden = true;
-        document.getElementById('reader-toc-btn')?.classList.remove('active');
-      }
+    listEl.innerHTML = bookBookmarks
+      .map(
+        (bm) => `
+        <div class="reader-bookmark-item" data-page="${bm.pageIndex}">
+          <div class="reader-bookmark-info">
+            <div class="reader-bookmark-title">
+              <span class="bookmark-icon">★</span>
+              <span class="bookmark-chapter">${escapeHtml(bm.chapterTitle)}</span>
+              <span class="reader-toc-page-badge">${state.currentLang === 'en' ? 'Page' : 'Hal.'} ${bm.pageIndex + 1}</span>
+            </div>
+            <p class="reader-bookmark-snippet">"${escapeHtml(bm.excerpt)}"</p>
+          </div>
+          <button type="button" class="reader-bookmark-del-btn" data-bm-id="${bm.id}" title="Hapus Bookmark">✕</button>
+        </div>
+      `
+      )
+      .join('');
+
+    listEl.querySelectorAll('.reader-bookmark-item').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.reader-bookmark-del-btn')) return;
+        const targetP = parseInt(item.dataset.page, 10);
+        if (!isNaN(targetP)) {
+          openReaderModal(state.currentReadingBook, targetP);
+          closeBookmarksDrawer();
+          const tocDrawer = document.getElementById('reader-toc-drawer');
+          if (tocDrawer) tocDrawer.hidden = true;
+          document.getElementById('reader-toc-btn')?.classList.remove('active');
+        }
+      });
     });
-  });
 
-  listEl.querySelectorAll('.reader-bookmark-del-btn').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const bmId = btn.dataset.bmId;
-      state.bookmarks = state.bookmarks.filter((b) => b.id !== bmId);
-      localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(state.bookmarks));
-      updateBookmarkUI();
-      renderBookmarksList();
-      showToast(t('reader_bookmark_removed'), '🗑️');
+    listEl.querySelectorAll('.reader-bookmark-del-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const bmId = btn.dataset.bmId;
+        state.bookmarks = state.bookmarks.filter((b) => b.id !== bmId);
+        localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(state.bookmarks));
+        updateBookmarkUI();
+        renderBookmarksList();
+        showToast(t('reader_bookmark_removed'), '🗑️');
+      });
     });
   });
 }
@@ -354,14 +390,30 @@ export function goToPrevReaderPage() {
 }
 
 // ============================================================================
-// MAIN READER MODAL OPEN
+// MAIN READER MODAL OPEN & PROGRESS AUTO-RESUME
 // ============================================================================
-export function openReaderModal(book, targetPageIndex = 0) {
+export function openReaderModal(book, targetPageIndex = null) {
   if (!book) return;
   state.currentReadingBook = book;
 
   // Build pages list if not present
   buildBookPages(book);
+
+  // Auto-resume check if targetPageIndex is null
+  if (targetPageIndex === null || targetPageIndex === undefined) {
+    const savedProgressStr = localStorage.getItem(`${STORAGE_KEYS.BOOK_PROGRESS_PREFIX}${book.id}`);
+    if (savedProgressStr) {
+      try {
+        const p = JSON.parse(savedProgressStr);
+        if (typeof p.pageIndex === 'number') {
+          targetPageIndex = p.pageIndex;
+        }
+      } catch (e) {}
+    }
+    if (targetPageIndex === null || targetPageIndex === undefined) {
+      targetPageIndex = 0;
+    }
+  }
 
   const modal = document.getElementById('reader-modal');
   const container = document.getElementById('reader-container');
@@ -379,9 +431,15 @@ export function openReaderModal(book, targetPageIndex = 0) {
   const fontFamLabel = document.getElementById('font-family-label');
   const modeLabel = document.getElementById('reader-mode-label');
   const tocListEl = document.getElementById('reader-toc-list');
-  const tocBtn = document.getElementById('reader-toc-btn');
 
   if (!modal) return;
+
+  // On mobile devices, ensure default font size is comfortable (14px - 16px)
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile && state.readerFontSize > 16) {
+    state.readerFontSize = 14;
+    localStorage.setItem(STORAGE_KEYS.READER_FONT_SIZE, '14');
+  }
 
   // Apply theme & font preferences
   container?.setAttribute('data-theme', state.readerTheme);
@@ -444,6 +502,25 @@ export function openReaderModal(book, targetPageIndex = 0) {
     const chapterTitle = pageItem ? pageItem.chapterTitle : (book.chapters?.[0]?.title || 'Bab 1');
     if (chapterNameEl) chapterNameEl.textContent = chapterTitle;
 
+    // Save reading progress & active session for instant auto-resume on reload/reopen
+    const sessionData = {
+      bookId: book.id,
+      pageIndex: clampedIndex,
+      chapterIndex: currentChapterIdx,
+      readerMode: state.readerMode,
+      autoResume: true,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(STORAGE_KEYS.LAST_READ_SESSION, JSON.stringify(sessionData));
+    localStorage.setItem(
+      `${STORAGE_KEYS.BOOK_PROGRESS_PREFIX}${book.id}`,
+      JSON.stringify({
+        pageIndex: clampedIndex,
+        chapterIndex: currentChapterIdx,
+        timestamp: Date.now()
+      })
+    );
+
     // Progress bar calculation
     const progressPct = totalPages > 1 ? (clampedIndex / (totalPages - 1)) * 100 : 100;
     if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(0, progressPct))}%`;
@@ -454,6 +531,8 @@ export function openReaderModal(book, targetPageIndex = 0) {
       jumpInput.max = String(totalPages);
       jumpInput.value = String(clampedIndex + 1);
     }
+
+    const isCurrentBookmarked = isCurrentPageBookmarked();
 
     if (state.readerMode === 'scroll') {
       // Continuous Scroll Mode: Show full current chapter in clean paper canvas
@@ -468,7 +547,7 @@ export function openReaderModal(book, targetPageIndex = 0) {
       const readChapLabel = `${isEn ? 'Chapter' : 'Bab'} ${currentChapterIdx + 1} ${isEn ? 'of' : 'dari'} ${book.chapters?.length || 1}`;
 
       if (pageCounterEl) {
-        pageCounterEl.textContent = `${readChapLabel} • ${isEn ? 'Scroll Mode' : 'Mode Gulir'}`;
+        pageCounterEl.innerHTML = `<span class="page-count-main">${readChapLabel}</span><span class="page-chap-sub"> • ${isEn ? 'Scroll Mode' : 'Mode Gulir'}</span>`;
       }
       if (prevText) prevText.textContent = isEn ? 'Previous' : 'Bab Sebelumnya';
       if (nextText) nextText.textContent = isEn ? 'Next' : 'Bab Berikutnya';
@@ -478,6 +557,9 @@ export function openReaderModal(book, targetPageIndex = 0) {
       if (bodyEl) {
         bodyEl.innerHTML = `
           <article class="reader-paper">
+            <button type="button" class="reader-corner-ribbon ${isCurrentBookmarked ? 'active' : ''}" id="reader-corner-ribbon" title="${isCurrentBookmarked ? 'Halaman ini ditandai' : 'Tandai halaman ini'}">
+              <span class="ribbon-icon">${isCurrentBookmarked ? '★' : '🔖'}</span>
+            </button>
             <div class="reader-eyebrow">
               <span>${escapeHtml(book.title)}</span>
               <span aria-hidden="true">·</span>
@@ -509,6 +591,7 @@ export function openReaderModal(book, targetPageIndex = 0) {
             if (btn.dataset.turn === 'next') goToNextReaderPage();
           });
         });
+        document.getElementById('reader-corner-ribbon')?.addEventListener('click', toggleCurrentPageBookmark);
       }
     } else {
       // Clean Page-By-Page Reading Mode in Paper Canvas
@@ -523,7 +606,7 @@ export function openReaderModal(book, targetPageIndex = 0) {
       const readPctLabel = `${Math.round(progressPct)}% ${t('reader_completed')}`;
 
       if (pageCounterEl) {
-        pageCounterEl.textContent = `${readPageLabel} • ${chapterTitle}`;
+        pageCounterEl.innerHTML = `<span class="page-count-main">${readPageLabel}</span><span class="page-chap-sub"> • ${escapeHtml(chapterTitle)}</span>`;
       }
       if (prevText) prevText.textContent = t('reader_prev');
       if (nextText) nextText.textContent = t('reader_next');
@@ -533,6 +616,9 @@ export function openReaderModal(book, targetPageIndex = 0) {
       if (bodyEl && pageItem) {
         bodyEl.innerHTML = `
           <article class="reader-paper ${pageItem.pageInChapter > 1 ? 'is-continuation-page' : ''}">
+            <button type="button" class="reader-corner-ribbon ${isCurrentBookmarked ? 'active' : ''}" id="reader-corner-ribbon" title="${isCurrentBookmarked ? 'Halaman ini ditandai' : 'Tandai halaman ini'}">
+              <span class="ribbon-icon">${isCurrentBookmarked ? '★' : '🔖'}</span>
+            </button>
             <div class="reader-eyebrow">
               <span>${escapeHtml(pageItem.pageInChapter > 1 ? pageItem.chapterTitle : book.title)}</span>
               <span aria-hidden="true">·</span>
@@ -564,6 +650,7 @@ export function openReaderModal(book, targetPageIndex = 0) {
             if (btn.dataset.turn === 'next') goToNextReaderPage();
           });
         });
+        document.getElementById('reader-corner-ribbon')?.addEventListener('click', toggleCurrentPageBookmark);
       }
     }
 
@@ -589,7 +676,7 @@ export function openReaderModal(book, targetPageIndex = 0) {
             openReaderModal(book, targetP);
             const drawer = document.getElementById('reader-toc-drawer');
             if (drawer) drawer.hidden = true;
-            tocBtn?.classList.remove('active');
+            document.getElementById('reader-toc-btn')?.classList.remove('active');
           }
         });
       });
@@ -614,22 +701,35 @@ export function openReaderModal(book, targetPageIndex = 0) {
 
   // Mark book as currently reading in shelf
   addOrUpdateShelfStatus(book, 'reading');
-  showToast(`Membuka "${book.title}" di pembaca kosmik`, '📖');
 }
 
-export function closeReaderModal() {
+export function closeReaderModal({ explicitUserClose = false } = {}) {
   const modal = document.getElementById('reader-modal');
   const tocDrawer = document.getElementById('reader-toc-drawer');
   const tocBtn = document.getElementById('reader-toc-btn');
   const searchBar = document.getElementById('reader-search-bar');
   const searchBtn = document.getElementById('reader-search-btn');
+  const bookmarksDrawer = document.getElementById('reader-bookmarks-drawer');
 
   if (tocDrawer) tocDrawer.hidden = true;
   if (tocBtn) tocBtn.classList.remove('active');
   if (searchBar) searchBar.hidden = true;
   if (searchBtn) searchBtn.classList.remove('active');
+  if (bookmarksDrawer) bookmarksDrawer.hidden = true;
 
   clearSearchHighlights();
+
+  // Mark session as not actively opened ONLY when user explicitly closes the reader (e.g. clicking ✕ or pressing Escape)
+  if (explicitUserClose) {
+    const lastSessionStr = localStorage.getItem(STORAGE_KEYS.LAST_READ_SESSION);
+    if (lastSessionStr) {
+      try {
+        const s = JSON.parse(lastSessionStr);
+        s.autoResume = false;
+        localStorage.setItem(STORAGE_KEYS.LAST_READ_SESSION, JSON.stringify(s));
+      } catch (e) {}
+    }
+  }
 
   if (modal) {
     modal.style.setProperty('display', 'none', 'important');
@@ -671,6 +771,9 @@ export function setupReaderControls() {
 
   // Bookmark controls
   const bookmarkBtn = document.getElementById('reader-bookmark-btn');
+  const bookmarksListBtn = document.getElementById('reader-bookmarks-list-btn');
+  const bookmarksDrawer = document.getElementById('reader-bookmarks-drawer');
+  const bookmarksCloseBtn = document.getElementById('reader-bookmarks-close-btn');
   const tabChapters = document.getElementById('reader-toc-tab-chapters');
   const tabBookmarks = document.getElementById('reader-toc-tab-bookmarks');
   const tocList = document.getElementById('reader-toc-list');
@@ -705,9 +808,9 @@ export function setupReaderControls() {
     );
   });
 
-  closeBtn?.addEventListener('click', closeReaderModal);
+  closeBtn?.addEventListener('click', () => closeReaderModal({ explicitUserClose: true }));
   modal?.addEventListener('click', (e) => {
-    if (e.target === modal) closeReaderModal();
+    if (e.target === modal) closeReaderModal({ explicitUserClose: true });
   });
 
   // Table of Contents Drawer Toggle
@@ -717,6 +820,7 @@ export function setupReaderControls() {
       tocDrawer.hidden = !willShow;
       tocBtn.classList.toggle('active', willShow);
       if (willShow) {
+        closeBookmarksDrawer();
         renderBookmarksList();
       }
     }
@@ -729,7 +833,22 @@ export function setupReaderControls() {
     }
   });
 
-  // Drawer Tabs switching (Chapters vs Bookmarks)
+  // Dedicated Bookmarks Drawer Toggle
+  bookmarksListBtn?.addEventListener('click', () => {
+    if (bookmarksDrawer) {
+      const willShow = bookmarksDrawer.hidden;
+      bookmarksDrawer.hidden = !willShow;
+      if (willShow) {
+        if (tocDrawer) tocDrawer.hidden = true;
+        tocBtn?.classList.remove('active');
+        renderBookmarksList();
+      }
+    }
+  });
+
+  bookmarksCloseBtn?.addEventListener('click', closeBookmarksDrawer);
+
+  // Drawer Tabs switching inside TOC drawer
   tabChapters?.addEventListener('click', () => {
     tabChapters.classList.add('active');
     tabBookmarks?.classList.remove('active');
@@ -866,7 +985,7 @@ export function setupReaderControls() {
 
   // Font sizing
   fontDec?.addEventListener('click', () => {
-    if (state.readerFontSize > 14) {
+    if (state.readerFontSize > 12) {
       state.readerFontSize -= 2;
       localStorage.setItem(STORAGE_KEYS.READER_FONT_SIZE, state.readerFontSize);
       bodyEl.style.fontSize = `${state.readerFontSize}px`;
@@ -926,7 +1045,7 @@ export function setupReaderControls() {
       e.preventDefault();
       goToPrevReaderPage();
     } else if (e.key === 'Escape') {
-      closeReaderModal();
+      closeReaderModal({ explicitUserClose: true });
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
       e.preventDefault();
       searchBtn?.click();

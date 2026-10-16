@@ -385,12 +385,40 @@ A man cannot fully be himself so long as he does not know the depths of his own 
     quote: "It is not that we have a short time to live, but that we waste a lot of it. Life is long if you know how to use it.",
     chapters: [
       {
-        title: "On the Shortness of Life (De Brevitate Vitae)",
-        content: `Most human beings, Paulinus, complain about the meanness of nature, because we are born for a brief span of life, and because this period granted to us runs by so swiftly, so passionately, that with few exceptions life leaves the rest of us in the lurch while we are still getting ready to live.
+        title: "Chapter 1: On the Shortness of Life (De Brevitate Vitae)",
+        content: `<p>Most human beings, Paulinus, complain about the meanness of nature, because we are born for a brief span of life, and because this period granted to us runs by so swiftly, so passionately, that with few exceptions life leaves the rest of us in the lurch while we are still getting ready to live.</p>
 
-Nor is it only the helpless crowd and the unthinking mob that laments what is supposedly a common disaster; the same feeling has drawn complaints even from famous men.
+<p>Nor is it only the helpless crowd and the unthinking mob that laments what is supposedly a common disaster; the same feeling has drawn complaints even from famous men. Hence the famous exclamation of the greatest physician, Hippocrates: "Life is short, the art is long."</p>
 
-No, we are not provided with a quick life, but we make it so; we are not destitute of it, but lavish with it. Just as huge, princely wealth, when it passes into the hands of a bad master, is squandered in an instant, so our life is ample enough for him who marshals it properly.`
+<p>No, we are not provided with a quick life, but we make it so; we are not destitute of it, but lavish with it. Just as huge, princely wealth, when it passes into the hands of a bad master, is squandered in an instant, but wealth however modest, if given to a careful custodian, increases with use, so our life is ample enough for him who marshals it properly.</p>`
+      },
+      {
+        title: "Chapter 2: The Preoccupation with Trivialities",
+        content: `<p>Why do we complain about Nature? She has acted kindly: life is long enough if you know how to use it. But one man is gripped by insatiable greed, another by a laborious devotion to useless tasks; one man is soaked in wine, another sluggish with inactivity.</p>
+
+<p>One man is worn out by political ambition that always hangs on the judgment of others; another is driven by headlong greed across every sea and land by the hope of profit. Some are tormented by a passion for military campaigning, always intent on endangering others or terrified for themselves.</p>
+
+<p>There are those who wear themselves out in voluntary servitude through thankless attendance on the great. Many are kept busy by the pursuit of other people's wealth or by complaints about their own. Many have no fixed goal, and are tossed about through ever-new plans by a fickleness that is shifting, inconstant, and dissatisfied with itself.</p>
+
+<p>Some have no path toward which to direct their course, but are caught drowsing and yawning by fate—so that I cannot doubt the truth of what the greatest of poets said as if in an oracle: "Small is the part of life in which we live." For all the rest of existence is not life, but mere time.</p>`
+      },
+      {
+        title: "Chapter 3: Mastering Time and Living Truly",
+        content: `<p>Vices beset and surround us on all sides, and do not permit us to stand upright or raise our eyes to discern the truth. They hold us submerged and bound fast in the depths of desire.</p>
+
+<p>Men never permit themselves to return to their true nature. If by chance any calm ever comes their way, they toss about like deep water where the swell lingers even after the storm has passed, and they never find rest from their obsessions.</p>
+
+<p>Do you think I speak only of those whose troubles are confessed by all? Look at those whose prosperity draws crowds: they are choked by their own good fortune! How many find their riches an unbearable burden! How many bleed from their own eloquence and the daily display of their talents!</p>
+
+<p>How many are pale from continuous pleasures! How many have not a single drop of freedom left from the horde of clients surrounding them! Examine them all from the lowest to the highest: this man seeks legal counsel, this one comes to support him; this one is the judge, these are the jurors. No one claims ownership of himself; everyone wears himself out for someone else.</p>`
+      },
+      {
+        title: "Chapter 4: On Tranquillity of Mind",
+        content: `<p>Look back and see how much time your creditors have stolen from you, how much your mistresses, your patrons, your clients, your domestic quarrels, your running about town on useless social calls. Add the illnesses we have brought upon ourselves; add the time that has slipped away unused. You will see that you have far fewer years than you count.</p>
+
+<p>Recall when you were ever steady in your purpose, how few days turned out as you intended, when you were ever at your own disposal, when your face kept its natural expression, when your mind was free from agitation, what achievement you have to show for so long a life, how many have plundered your existence while you were not aware of what you were losing.</p>
+
+<p>You live as if you were destined to live forever; your own frailty never occurs to you; you take no notice of how much time has already passed. You squander it as if you had a full and overflowing supply, although all the while that very day which you bestow on some person or thing may be your last. You fear everything like mortals, and desire everything like immortals.</p>`
       }
     ]
   },

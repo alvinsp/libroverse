@@ -4,6 +4,7 @@
  */
 
 import { state } from './core/state.js';
+import { STORAGE_KEYS } from './core/constants.js';
 import { BOOKS_DATA } from './data/books.js';
 import { initCosmicCanvas } from './ui/canvas/cosmicCanvas.js';
 import { applyLanguage, onLanguageChange, t } from './services/i18n/i18n.js';
@@ -112,6 +113,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initUserBooksStorage(() => {
     filterAndRenderBooks();
   });
+
+  // Auto-Resume Last Reading Session (re-opens exact page if user exited browser while reading)
+  try {
+    const sessionStr = localStorage.getItem(STORAGE_KEYS.LAST_READ_SESSION);
+    if (sessionStr) {
+      const session = JSON.parse(sessionStr);
+      if (session && session.autoResume && session.bookId) {
+        const book = state.books.find((b) => b.id === session.bookId) || BOOKS_DATA.find((b) => b.id === session.bookId);
+        if (book) {
+          openReaderModal(book, session.pageIndex);
+          showToast(t('reader_auto_resume_toast', { title: book.title, page: (session.pageIndex || 0) + 1 }), '🚀');
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Auto-resume session note:', err);
+  }
 
   // Ambient Audio Button
   document.getElementById('ambient-audio-btn')?.addEventListener('click', toggleAmbientSpaceAudio);
