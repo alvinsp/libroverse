@@ -6,6 +6,298 @@ import { showToast } from '../../utils/toast.js';
 import { buildBookPages } from '../../services/parser/paginator.js';
 import { addOrUpdateShelfStatus } from '../../services/storage/shelfStorage.js';
 
+// ============================================================================
+// ZOOM MANAGEMENT (50% to 150%)
+// ============================================================================
+export function applyReaderZoom(zoomLevel, showNotice = false) {
+  // Clamped between 0.50 (50%) and 1.50 (150%)
+  const clampedZoom = Math.min(1.5, Math.max(0.5, Math.round(zoomLevel * 100) / 100));
+  state.readerZoom = clampedZoom;
+  localStorage.setItem(STORAGE_KEYS.READER_ZOOM, String(clampedZoom));
+
+  const container = document.getElementById('reader-container');
+  const bodyEl = document.getElementById('reader-body-content');
+  const zoomValBtn = document.getElementById('reader-zoom-val');
+  const quickZoom50 = document.getElementById('reader-quick-zoom-50');
+
+  if (container) {
+    container.style.setProperty('--reader-zoom', String(clampedZoom));
+    container.classList.toggle('is-zoomed-out', clampedZoom <= 0.75);
+  }
+  if (bodyEl) {
+    bodyEl.style.setProperty('--reader-zoom', String(clampedZoom));
+  }
+  if (zoomValBtn) {
+    zoomValBtn.textContent = `${Math.round(clampedZoom * 100)}%`;
+  }
+  if (quickZoom50) {
+    quickZoom50.classList.toggle('active', Math.abs(clampedZoom - 0.5) < 0.05);
+  }
+
+  if (showNotice) {
+    showToast(
+      Math.abs(clampedZoom - 0.5) < 0.05
+        ? 'Zoom 50% diaktifkan (Mode Ringkas Layar HP) 🔍'
+        : `Zoom Pembaca: ${Math.round(clampedZoom * 100)}%`,
+      '🔍'
+    );
+  }
+}
+
+// ============================================================================
+// BOOKMARK SYSTEM
+// ============================================================================
+export function isCurrentPageBookmarked() {
+  if (!state.currentReadingBook) return false;
+  return state.bookmarks.some(
+    (b) => b.bookId === state.currentReadingBook.id && b.pageIndex === state.currentPageIndex
+  );
+}
+
+export function updateBookmarkUI() {
+  const bookmarkBtn = document.getElementById('reader-bookmark-btn');
+  const icon = document.getElementById('reader-bookmark-icon');
+  const countEl = document.getElementById('reader-bookmark-count');
+  const isBookmarked = isCurrentPageBookmarked();
+
+  if (bookmarkBtn) {
+    bookmarkBtn.classList.toggle('active', isBookmarked);
+  }
+  if (icon) {
+    icon.textContent = isBookmarked ? '★' : '🔖';
+  }
+  if (countEl && state.currentReadingBook) {
+    const bookBookmarks = state.bookmarks.filter((b) => b.bookId === state.currentReadingBook.id);
+    countEl.textContent = String(bookBookmarks.length);
+  }
+}
+
+export function toggleCurrentPageBookmark() {
+  if (!state.currentReadingBook) return;
+  const book = state.currentReadingBook;
+  const pageIdx = state.currentPageIndex;
+  const existingIdx = state.bookmarks.findIndex(
+    (b) => b.bookId === book.id && b.pageIndex === pageIdx
+  );
+
+  if (existingIdx > -1) {
+    state.bookmarks.splice(existingIdx, 1);
+    showToast(t('reader_bookmark_removed'), '🗑️');
+  } else {
+    const pageItem = book.pagesList ? book.pagesList[pageIdx] : null;
+    const chTitle = pageItem ? pageItem.chapterTitle : (book.chapters?.[state.currentChapterIndex]?.title || 'Bab 1');
+    const excerpt = pageItem?.contentHtml
+      ? pageItem.contentHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 95) + '...'
+      : `Halaman ${pageIdx + 1}`;
+
+    state.bookmarks.push({
+      id: `bm_${Date.now()}`,
+      bookId: book.id,
+      bookTitle: book.title,
+      pageIndex: pageIdx,
+      chapterIndex: state.currentChapterIndex,
+      chapterTitle: chTitle,
+      excerpt: excerpt,
+      createdAt: new Date().toISOString()
+    });
+    showToast(t('reader_bookmark_added'), '⭐');
+  }
+
+  localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(state.bookmarks));
+  updateBookmarkUI();
+  renderBookmarksList();
+}
+
+export function renderBookmarksList() {
+  const listEl = document.getElementById('reader-bookmarks-list');
+  if (!listEl || !state.currentReadingBook) return;
+
+  const bookBookmarks = state.bookmarks.filter((b) => b.bookId === state.currentReadingBook.id);
+  if (bookBookmarks.length === 0) {
+    listEl.innerHTML = `
+      <div class="reader-empty-state">
+        <span class="empty-icon">🔖</span>
+        <p>${t('reader_no_bookmarks')}</p>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = bookBookmarks
+    .map(
+      (bm) => `
+      <div class="reader-bookmark-item" data-page="${bm.pageIndex}">
+        <div class="reader-bookmark-info">
+          <div class="reader-bookmark-title">
+            <span class="bookmark-icon">★</span>
+            <span class="bookmark-chapter">${escapeHtml(bm.chapterTitle)}</span>
+            <span class="reader-toc-page-badge">${state.currentLang === 'en' ? 'Page' : 'Hal.'} ${bm.pageIndex + 1}</span>
+          </div>
+          <p class="reader-bookmark-snippet">"${escapeHtml(bm.excerpt)}"</p>
+        </div>
+        <button type="button" class="reader-bookmark-del-btn" data-bm-id="${bm.id}" title="Hapus Bookmark">✕</button>
+      </div>
+    `
+    )
+    .join('');
+
+  listEl.querySelectorAll('.reader-bookmark-item').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.reader-bookmark-del-btn')) return;
+      const targetP = parseInt(item.dataset.page, 10);
+      if (!isNaN(targetP)) {
+        openReaderModal(state.currentReadingBook, targetP);
+        const drawer = document.getElementById('reader-toc-drawer');
+        if (drawer) drawer.hidden = true;
+        document.getElementById('reader-toc-btn')?.classList.remove('active');
+      }
+    });
+  });
+
+  listEl.querySelectorAll('.reader-bookmark-del-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const bmId = btn.dataset.bmId;
+      state.bookmarks = state.bookmarks.filter((b) => b.id !== bmId);
+      localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(state.bookmarks));
+      updateBookmarkUI();
+      renderBookmarksList();
+      showToast(t('reader_bookmark_removed'), '🗑️');
+    });
+  });
+}
+
+// ============================================================================
+// IN-READER SEARCH SYSTEM
+// ============================================================================
+export function clearSearchHighlights() {
+  const bodyEl = document.getElementById('reader-body-content');
+  if (!bodyEl) return;
+  bodyEl.querySelectorAll('mark.reader-search-highlight').forEach((mark) => {
+    const parent = mark.parentNode;
+    if (parent) {
+      parent.replaceChild(document.createTextNode(mark.textContent), mark);
+      parent.normalize();
+    }
+  });
+}
+
+export function applySearchHighlightOnCurrentPage() {
+  clearSearchHighlights();
+  if (!state.readerSearchQuery) return;
+
+  const contentEl = document.querySelector('.epub-rendered-content');
+  if (!contentEl) return;
+
+  const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT, null, false);
+  const textNodes = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    textNodes.push(node);
+  }
+
+  const query = state.readerSearchQuery;
+  let firstMark = null;
+
+  textNodes.forEach((textNode) => {
+    const text = textNode.nodeValue;
+    const lower = text.toLowerCase();
+    const idx = lower.indexOf(query);
+    if (idx !== -1) {
+      const parent = textNode.parentNode;
+      if (!parent || parent.nodeName === 'SCRIPT' || parent.nodeName === 'STYLE' || parent.nodeName === 'MARK') return;
+      const frag = document.createDocumentFragment();
+      let lastIdx = 0;
+      let cur = idx;
+      while (cur !== -1) {
+        frag.appendChild(document.createTextNode(text.substring(lastIdx, cur)));
+        const mark = document.createElement('mark');
+        mark.className = 'reader-search-highlight';
+        mark.textContent = text.substring(cur, cur + query.length);
+        if (!firstMark) firstMark = mark;
+        frag.appendChild(mark);
+        lastIdx = cur + query.length;
+        cur = lower.indexOf(query, lastIdx);
+      }
+      frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+      parent.replaceChild(frag, textNode);
+    }
+  });
+
+  const allHighlights = contentEl.querySelectorAll('mark.reader-search-highlight');
+  allHighlights.forEach((h, i) => {
+    h.classList.toggle('reader-search-highlight--active', i === 0);
+  });
+  if (allHighlights[0]) {
+    allHighlights[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+export function jumpToSearchResult(index) {
+  if (index < 0 || index >= state.readerSearchResults.length) return;
+  state.currentSearchResultIndex = index;
+  const target = state.readerSearchResults[index];
+  const searchStats = document.getElementById('reader-search-stats');
+
+  if (searchStats) {
+    searchStats.textContent = `${index + 1} / ${state.readerSearchResults.length}`;
+  }
+
+  if (target.pageIndex !== state.currentPageIndex) {
+    openReaderModal(state.currentReadingBook, target.pageIndex);
+  } else {
+    applySearchHighlightOnCurrentPage();
+  }
+}
+
+export function performInReaderSearch(query) {
+  state.readerSearchQuery = query.trim().toLowerCase();
+  const searchStats = document.getElementById('reader-search-stats');
+  const prevBtn = document.getElementById('reader-search-prev-btn');
+  const nextBtn = document.getElementById('reader-search-next-btn');
+  const book = state.currentReadingBook;
+
+  if (!query || !book || !book.pagesList) {
+    state.readerSearchResults = [];
+    state.currentSearchResultIndex = -1;
+    if (searchStats) searchStats.textContent = '0/0';
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    clearSearchHighlights();
+    return;
+  }
+
+  // Scan all pages for matches
+  const results = [];
+  book.pagesList.forEach((page, pIdx) => {
+    const text = page.contentHtml ? page.contentHtml.replace(/<[^>]+>/g, ' ') : '';
+    let matchIdx = text.toLowerCase().indexOf(state.readerSearchQuery);
+    while (matchIdx !== -1) {
+      results.push({ pageIndex: pIdx, matchOffset: matchIdx });
+      matchIdx = text.toLowerCase().indexOf(state.readerSearchQuery, matchIdx + state.readerSearchQuery.length);
+    }
+  });
+
+  state.readerSearchResults = results;
+  if (results.length > 0) {
+    let startIdx = results.findIndex((r) => r.pageIndex >= state.currentPageIndex);
+    if (startIdx === -1) startIdx = 0;
+    state.currentSearchResultIndex = startIdx;
+    if (prevBtn) prevBtn.disabled = false;
+    if (nextBtn) nextBtn.disabled = false;
+    jumpToSearchResult(startIdx);
+  } else {
+    state.currentSearchResultIndex = -1;
+    if (searchStats) searchStats.textContent = t('reader_search_not_found');
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    clearSearchHighlights();
+  }
+}
+
+// ============================================================================
+// LABELS & PAGE TURNING
+// ============================================================================
 export function updateReaderLabels() {
   const modeLabel = document.getElementById('reader-mode-label');
   if (modeLabel) {
@@ -15,6 +307,12 @@ export function updateReaderLabels() {
   if (prevText) prevText.textContent = t('reader_prev');
   const nextText = document.getElementById('reader-next-btn-text');
   if (nextText) nextText.textContent = t('reader_next');
+
+  const searchInput = document.getElementById('reader-search-input');
+  if (searchInput) searchInput.placeholder = t('reader_search_ph');
+
+  updateBookmarkUI();
+  renderBookmarksList();
 }
 
 export function goToNextReaderPage() {
@@ -55,6 +353,9 @@ export function goToPrevReaderPage() {
   }
 }
 
+// ============================================================================
+// MAIN READER MODAL OPEN
+// ============================================================================
 export function openReaderModal(book, targetPageIndex = 0) {
   if (!book) return;
   state.currentReadingBook = book;
@@ -89,6 +390,9 @@ export function openReaderModal(book, targetPageIndex = 0) {
   if (fontValEl) fontValEl.textContent = `${state.readerFontSize}px`;
   if (fontFamLabel) fontFamLabel.textContent = state.readerFontFamily === 'serif' ? 'Serif' : 'Sans';
 
+  // Apply zoom preference (allows down to 50%)
+  applyReaderZoom(state.readerZoom || 1.0);
+
   if (modeLabel) {
     modeLabel.textContent = state.readerMode === 'page' ? '📖 Halaman' : '📜 Mode Gulir';
   }
@@ -113,8 +417,18 @@ export function openReaderModal(book, targetPageIndex = 0) {
     if (nextBtn) nextBtn.disabled = true;
     if (bodyEl) {
       bodyEl.innerHTML = `
-        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;">
-          <iframe src="${pdfUrl}" style="width: 100%; height: 80vh; border: none; border-radius: 8px; background: #fff;" title="PDF Preview"></iframe>
+        <div class="reader-pdf-container">
+          <div class="reader-pdf-actions">
+            <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer" class="reader-pdf-btn">
+              <span>${t('pdf_open_new_tab')}</span>
+            </a>
+            <a href="${pdfUrl}" download="${escapeHtml(book.title)}.pdf" class="reader-pdf-btn reader-pdf-btn--primary">
+              <span>${t('pdf_download')}</span>
+            </a>
+          </div>
+          <div class="reader-pdf-frame-wrap">
+            <iframe src="${pdfUrl}" class="reader-pdf-iframe" title="PDF Preview"></iframe>
+          </div>
         </div>
       `;
     }
@@ -282,6 +596,15 @@ export function openReaderModal(book, targetPageIndex = 0) {
     }
   }
 
+  // Update Bookmark UI
+  updateBookmarkUI();
+  renderBookmarksList();
+
+  // Re-apply search highlight if searching
+  if (state.readerSearchQuery) {
+    applySearchHighlightOnCurrentPage();
+  }
+
   if (bodyEl) bodyEl.scrollTop = 0;
   modal.style.setProperty('display', 'flex', 'important');
   modal.classList.add('active');
@@ -298,9 +621,15 @@ export function closeReaderModal() {
   const modal = document.getElementById('reader-modal');
   const tocDrawer = document.getElementById('reader-toc-drawer');
   const tocBtn = document.getElementById('reader-toc-btn');
+  const searchBar = document.getElementById('reader-search-bar');
+  const searchBtn = document.getElementById('reader-search-btn');
 
   if (tocDrawer) tocDrawer.hidden = true;
   if (tocBtn) tocBtn.classList.remove('active');
+  if (searchBar) searchBar.hidden = true;
+  if (searchBtn) searchBtn.classList.remove('active');
+
+  clearSearchHighlights();
 
   if (modal) {
     modal.style.setProperty('display', 'none', 'important');
@@ -311,6 +640,9 @@ export function closeReaderModal() {
   document.body.style.overflow = '';
 }
 
+// ============================================================================
+// SETUP CONTROLS & LISTENERS
+// ============================================================================
 export function setupReaderControls() {
   const modal = document.getElementById('reader-modal');
   const bodyEl = document.getElementById('reader-body-content');
@@ -330,6 +662,27 @@ export function setupReaderControls() {
   const container = document.getElementById('reader-container');
   const expandIcon = document.getElementById('reader-expand-icon');
   const compressIcon = document.getElementById('reader-compress-icon');
+
+  // Zoom controls
+  const zoomDec = document.getElementById('reader-zoom-dec');
+  const zoomInc = document.getElementById('reader-zoom-inc');
+  const zoomVal = document.getElementById('reader-zoom-val');
+  const quickZoom50 = document.getElementById('reader-quick-zoom-50');
+
+  // Bookmark controls
+  const bookmarkBtn = document.getElementById('reader-bookmark-btn');
+  const tabChapters = document.getElementById('reader-toc-tab-chapters');
+  const tabBookmarks = document.getElementById('reader-toc-tab-bookmarks');
+  const tocList = document.getElementById('reader-toc-list');
+  const bookmarksList = document.getElementById('reader-bookmarks-list');
+
+  // Search controls
+  const searchBtn = document.getElementById('reader-search-btn');
+  const searchBar = document.getElementById('reader-search-bar');
+  const searchInput = document.getElementById('reader-search-input');
+  const searchPrevBtn = document.getElementById('reader-search-prev-btn');
+  const searchNextBtn = document.getElementById('reader-search-next-btn');
+  const searchCloseBtn = document.getElementById('reader-search-close-btn');
 
   // Restore expanded state if user previously maximized reader canvas
   const isInitiallyExpanded = localStorage.getItem('libroverse_reader_expanded') === 'true';
@@ -363,6 +716,9 @@ export function setupReaderControls() {
       const willShow = tocDrawer.hidden;
       tocDrawer.hidden = !willShow;
       tocBtn.classList.toggle('active', willShow);
+      if (willShow) {
+        renderBookmarksList();
+      }
     }
   });
 
@@ -370,6 +726,98 @@ export function setupReaderControls() {
     if (tocDrawer) {
       tocDrawer.hidden = true;
       tocBtn?.classList.remove('active');
+    }
+  });
+
+  // Drawer Tabs switching (Chapters vs Bookmarks)
+  tabChapters?.addEventListener('click', () => {
+    tabChapters.classList.add('active');
+    tabBookmarks?.classList.remove('active');
+    if (tocList) tocList.hidden = false;
+    if (bookmarksList) bookmarksList.hidden = true;
+  });
+
+  tabBookmarks?.addEventListener('click', () => {
+    tabBookmarks.classList.add('active');
+    tabChapters?.classList.remove('active');
+    if (tocList) tocList.hidden = true;
+    if (bookmarksList) {
+      bookmarksList.hidden = false;
+      renderBookmarksList();
+    }
+  });
+
+  // Bookmark Toggle Button
+  bookmarkBtn?.addEventListener('click', toggleCurrentPageBookmark);
+
+  // Zoom Controllers (down to 50%!)
+  zoomDec?.addEventListener('click', () => {
+    applyReaderZoom(state.readerZoom - 0.15, true);
+  });
+
+  zoomInc?.addEventListener('click', () => {
+    applyReaderZoom(state.readerZoom + 0.15, true);
+  });
+
+  zoomVal?.addEventListener('click', () => {
+    // Toggle between 100% and 50%
+    const nextZoom = Math.abs(state.readerZoom - 1.0) < 0.05 ? 0.50 : 1.0;
+    applyReaderZoom(nextZoom, true);
+  });
+
+  quickZoom50?.addEventListener('click', () => {
+    // Quick Mobile 50% Zoom Toggle
+    const nextZoom = Math.abs(state.readerZoom - 0.50) < 0.05 ? 1.0 : 0.50;
+    applyReaderZoom(nextZoom, true);
+  });
+
+  // In-Reader Search Listeners
+  searchBtn?.addEventListener('click', () => {
+    if (!searchBar) return;
+    const willShow = searchBar.hidden;
+    searchBar.hidden = !willShow;
+    searchBtn.classList.toggle('active', willShow);
+    if (willShow) {
+      searchInput?.focus();
+      if (searchInput && searchInput.value) {
+        performInReaderSearch(searchInput.value);
+      }
+    } else {
+      clearSearchHighlights();
+    }
+  });
+
+  searchCloseBtn?.addEventListener('click', () => {
+    if (searchBar) searchBar.hidden = true;
+    searchBtn?.classList.remove('active');
+    if (searchInput) searchInput.value = '';
+    clearSearchHighlights();
+    state.readerSearchQuery = '';
+    state.readerSearchResults = [];
+    state.currentSearchResultIndex = -1;
+  });
+
+  let searchTimeout = null;
+  searchInput?.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      performInReaderSearch(e.target.value);
+    }, 220);
+  });
+
+  searchPrevBtn?.addEventListener('click', () => {
+    if (state.readerSearchResults.length > 0) {
+      const prevIdx =
+        (state.currentSearchResultIndex - 1 + state.readerSearchResults.length) %
+        state.readerSearchResults.length;
+      jumpToSearchResult(prevIdx);
+    }
+  });
+
+  searchNextBtn?.addEventListener('click', () => {
+    if (state.readerSearchResults.length > 0) {
+      const nextIdx = (state.currentSearchResultIndex + 1) % state.readerSearchResults.length;
+      jumpToSearchResult(nextIdx);
     }
   });
 
@@ -463,7 +911,13 @@ export function setupReaderControls() {
   window.addEventListener('keydown', (e) => {
     const readerModal = document.getElementById('reader-modal');
     if (!readerModal || readerModal.hidden || readerModal.style.display === 'none') return;
-    if (document.activeElement === jumpInput) return;
+    if (document.activeElement === jumpInput || document.activeElement === searchInput) {
+      if (e.key === 'Escape' && document.activeElement === searchInput) {
+        if (searchBar) searchBar.hidden = true;
+        searchBtn?.classList.remove('active');
+      }
+      return;
+    }
 
     if (e.key === 'ArrowRight' || e.key === 'PageDown') {
       e.preventDefault();
@@ -471,24 +925,58 @@ export function setupReaderControls() {
     } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
       e.preventDefault();
       goToPrevReaderPage();
+    } else if (e.key === 'Escape') {
+      closeReaderModal();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      searchBtn?.click();
     }
   });
 
-  // Mobile Touch Swipe Gesture for Natural Page Turning
+  // Mobile Touch Gestures: Single finger for Page Turning, Two fingers for Pinch-to-Zoom (50% to 150%)
   let touchStartX = 0;
   let touchStartY = 0;
   let touchStartTime = 0;
+  let isPinching = false;
+  let initialPinchDistance = 0;
+  let initialPinchZoom = 1.0;
 
   bodyEl?.addEventListener('touchstart', (e) => {
-    if (e.touches && e.touches.length === 1) {
+    if (e.touches && e.touches.length === 2) {
+      isPinching = true;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDistance = Math.hypot(dx, dy);
+      initialPinchZoom = state.readerZoom || 1.0;
+    } else if (e.touches && e.touches.length === 1) {
+      isPinching = false;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
       touchStartTime = Date.now();
     }
   }, { passive: true });
 
+  bodyEl?.addEventListener('touchmove', (e) => {
+    if (isPinching && e.touches && e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const currentDist = Math.hypot(dx, dy);
+      if (initialPinchDistance > 10) {
+        const factor = currentDist / initialPinchDistance;
+        const targetZoom = Math.min(1.5, Math.max(0.5, Math.round(initialPinchZoom * factor * 100) / 100));
+        applyReaderZoom(targetZoom);
+      }
+    }
+  }, { passive: true });
+
   bodyEl?.addEventListener('touchend', (e) => {
-    if (e.changedTouches && e.changedTouches.length === 1 && state.readerMode === 'page') {
+    if (isPinching && (!e.touches || e.touches.length < 2)) {
+      isPinching = false;
+      applyReaderZoom(state.readerZoom, true);
+      return;
+    }
+
+    if (!isPinching && e.changedTouches && e.changedTouches.length === 1 && state.readerMode === 'page') {
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
       const diffX = touchEndX - touchStartX;

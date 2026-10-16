@@ -19,6 +19,11 @@ export const state = {
   readerFontSize: parseInt(localStorage.getItem(STORAGE_KEYS.READER_FONT_SIZE) || '18', 10),
   readerFontFamily: localStorage.getItem(STORAGE_KEYS.READER_FONT_FAMILY) || 'serif',
   readerTheme: localStorage.getItem(STORAGE_KEYS.READER_THEME) || 'dark',
+  readerZoom: parseFloat(localStorage.getItem(STORAGE_KEYS.READER_ZOOM) || '1.0'),
+  bookmarks: JSON.parse(localStorage.getItem(STORAGE_KEYS.BOOKMARKS) || '[]'),
+  readerSearchQuery: '',
+  readerSearchResults: [],
+  currentSearchResultIndex: -1,
 
   // Audio Player State
   currentAudioBook: null,

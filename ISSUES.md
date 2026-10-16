@@ -17,6 +17,7 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
 | #7 | [Sistem Multi-Bahasa (i18n) Tidak Berfungsi](#issue-7-pengubah-bahasa-tidak-berfungsi--belum-reaktif) | Bug / i18n | `[x] Solved` | `src/services/i18n/`, `index.html` |
 | #8 | [Kode Monolitik Belum Menerapkan Clean Architecture](#issue-8-arsitektur-kode-monolitik-belum-menerapkan-clean-architecture) | Architecture / Refactor | `[x] Solved` | `src/core/`, `src/services/`, `src/ui/` |
 | #9 | [Normalisasi EPUB & Eliminasi Judul Duplikat](#issue-9-normalisasi-epub-eliminasi-judul-duplikat-dan-tipografi-seperti-the-celestial-odyssey) | Parser / Typography | `[x] Solved` | `src/services/parser/epubNormalizer.js`, `src/style.css` |
+| #10 | [Zoom Out 50% di HP, Ergonomi Mobile, In-Reader Search & Bookmark](#issue-10-zoom-out-50-di-hp-ergonomi-mobile-in-reader-search--bookmark) | Mobile / UX / Feature | `[x] Solved` | `src/ui/reader/readerView.js`, `src/style.css`, `index.html` |
 
 ---
 
@@ -151,4 +152,35 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
 
 ---
 
+### Issue #10: Zoom Out 50% di HP, Ergonomi Mobile, In-Reader Search & Bookmark
+- **Laporan Pengguna**: *"selanjutnya buatkan ketika membaca di handphone itu frame nya terlalu besar jadi perlu di zoom out sampe 50%"* dan penambahan fitur (search, bookmarks, optimasi parser & testing build).
+- **Penyebab**:
+  1. Pada layar ponsel pintar (*smartphone*), frame baca edge-to-edge dan tipografi terasa terlalu besar bagi pengguna yang menginginkan kepadatan teks tinggi (*information density*) layaknya buku saku, sehingga dibutuhkan kemampuan zoom out hingga **50%**.
+  2. Belum ada kontrol zoom fleksibel pada toolbar pembaca dan kontrol gesture cubit layar (*pinch-to-zoom*).
+  3. Belum tersedianya fitur pencarian kata langsung di dalam buku (*in-reader text search*) dan penanda halaman (*bookmarks*) yang tersimpan lokal.
+- **Solusi**:
+  - [x] **Kontrol Zoom Fleksibel (50% – 150%)**:
+    - Membangun fungsi `applyReaderZoom(zoomLevel)` di [src/ui/reader/readerView.js](file:///e:/projects/rea-libroverse/src/ui/reader/readerView.js) dengan batas minimal **50% (0.50x)** dan maksimal 150% (1.50x).
+    - Menambahkan tombol stepper zoom (`🔍−`, `100%`, `🔍+`) dan pill cepat **`50%`** khusus mobile di toolbar pembaca.
+    - Mengintegrasikan CSS custom property `--reader-zoom` pada `.reader-container` dan `.reader-body` dengan penyesuaian padding otomatis (`.is-zoomed-out`) agar tata letak tidak terpotong.
+    - Mendukung gestur sentuh **Pinch-to-Zoom** (cubit dengan 2 jari) untuk mengecilkan atau membesarkan frame secara mulus di smartphone.
+    - Menyimpan preferensi zoom pengguna di `localStorage` (`libroverse_reader_zoom`).
+  - [x] **Pencarian Kata Kunci di Dalam Buku (In-Reader Search)**:
+    - Menambahkan tombol `🔍 Cari` dan bar pencarian geser (*slide-down search bar*) di header reader.
+    - Memindai seluruh bab/halaman buku secara instan, menyorot temuan dengan `<mark class="reader-search-highlight">` dan indikator temuan aktif (`.reader-search-highlight--active`).
+    - Tombol navigasi temuan Sebelumnya (`↑`) dan Berikutnya (`↓`) dengan lompat halaman otomatis dan scroll mulus.
+  - [x] **Sistem Penanda Halaman (Bookmarks)**:
+    - Tombol `🔖 Tandai` di toolbar reader untuk menandai halaman aktif secara instan dengan indikator bintang emas (`★`).
+    - Menyediakan tab **`🔖 Bookmark`** di dalam laci daftar isi (`#reader-toc-drawer`), menampilkan nomor halaman, judul bab, dan cuplikan teks.
+    - Klik satu sentuhan untuk lompat langsung ke halaman bookmark dan tombol hapus bookmark.
+  - [x] **Optimasi Parser & PDF**:
+    - Memperbarui [src/services/parser/paginator.js](file:///e:/projects/rea-libroverse/src/services/parser/paginator.js) dengan sub-chunking paragraf monolitik (>450 kata) agar halaman tidak membengkak tinggi.
+    - Menyediakan tombol aksi cepat *"↗ Buka di Tab Baru"* dan *"📥 Unduh Berkas PDF"* untuk dokumen PDF.
+  - [x] **Uji Build Produksi**:
+    - Diverifikasi dengan `npm run build` (Vite v8), berhasil 100% tanpa kendala (0 error, build time < 2s).
+- **Status**: `[x] Solved`
+
+---
+
 *Terakhir diperbarui: 2026-10-16 • Semua isu terverifikasi dan berstatus `[x] Solved`.*
+

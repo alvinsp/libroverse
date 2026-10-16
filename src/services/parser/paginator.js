@@ -49,7 +49,33 @@ export function paginateHtmlContent(html, wordsPerPage = 380) {
       }
 
       const text = el.textContent || '';
-      const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+      const words = text.trim().split(/\s+/).filter(Boolean);
+      const wordCount = words.length;
+
+      // Smart handling for unusually large monolithic paragraphs
+      if (wordCount > Math.round(wordsPerPage * 1.35) && (el.tagName.toLowerCase() === 'p' || el.tagName.toLowerCase() === 'div')) {
+        const sentences = text.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g) || [text];
+        let subChunkWords = [];
+        for (const s of sentences) {
+          const sWords = s.trim().split(/\s+/).filter(Boolean);
+          if (currentWordCount + subChunkWords.length + sWords.length > wordsPerPage && (currentBlocks.length > 0 || subChunkWords.length > 0)) {
+            if (subChunkWords.length > 0) {
+              currentBlocks.push({ outerHTML: `<p>${escapeHtml(subChunkWords.join(' '))}</p>` });
+            }
+            pages.push(currentBlocks.map((b) => b.outerHTML).join(''));
+            currentBlocks = [];
+            currentWordCount = 0;
+            subChunkWords = [...sWords];
+          } else {
+            subChunkWords.push(...sWords);
+          }
+        }
+        if (subChunkWords.length > 0) {
+          currentBlocks.push({ outerHTML: `<p>${escapeHtml(subChunkWords.join(' '))}</p>` });
+          currentWordCount += subChunkWords.length;
+        }
+        continue;
+      }
 
       if (currentWordCount + wordCount > wordsPerPage && currentBlocks.length > 0) {
         pages.push(currentBlocks.map((b) => b.outerHTML).join(''));

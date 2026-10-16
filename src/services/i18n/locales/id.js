@@ -88,5 +88,26 @@ export default {
   card_save: 'Simpan',
   card_saved: 'Tersimpan',
   audio_playing: 'Memutar narasi kosmik "{title}"',
-  toast_lang_changed: 'Bahasa diganti ke {lang}'
+  toast_lang_changed: 'Bahasa diganti ke {lang}',
+  reader_zoom: 'Zoom',
+  reader_zoom_out: 'Perkecil (Zoom Out)',
+  reader_zoom_in: 'Perbesar (Zoom In)',
+  reader_zoom_reset: 'Reset Zoom (100%)',
+  reader_zoom_mobile_compact: 'Zoom 50%',
+  reader_search_btn: 'Cari Teks',
+  reader_search_ph: 'Cari kata di dalam buku ini...',
+  reader_search_prev: 'Hasil Sebelumnya',
+  reader_search_next: 'Hasil Berikutnya',
+  reader_search_close: 'Tutup Pencarian',
+  reader_search_results: '{cur} dari {total} temuan',
+  reader_search_not_found: 'Kata tidak ditemukan',
+  reader_bookmark_btn: 'Tandai Halaman',
+  reader_bookmark_added: 'Halaman berhasil ditandai!',
+  reader_bookmark_removed: 'Tanda halaman dihapus',
+  reader_bookmarks_tab: '🔖 Bookmark',
+  reader_chapters_tab: '📑 Daftar Bab',
+  reader_no_bookmarks: 'Belum ada halaman yang ditandai.',
+  pdf_open_new_tab: '↗ Buka di Tab Baru',
+  pdf_download: '📥 Unduh Berkas PDF'
 };
+

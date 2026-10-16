@@ -88,5 +88,26 @@ export default {
   card_save: 'Save',
   card_saved: 'Saved',
   audio_playing: 'Playing cosmic narration "{title}"',
-  toast_lang_changed: 'Language switched to {lang}'
+  toast_lang_changed: 'Language switched to {lang}',
+  reader_zoom: 'Zoom',
+  reader_zoom_out: 'Zoom Out',
+  reader_zoom_in: 'Zoom In',
+  reader_zoom_reset: 'Reset Zoom (100%)',
+  reader_zoom_mobile_compact: 'Zoom 50%',
+  reader_search_btn: 'Search Text',
+  reader_search_ph: 'Search words in this book...',
+  reader_search_prev: 'Previous Match',
+  reader_search_next: 'Next Match',
+  reader_search_close: 'Close Search',
+  reader_search_results: '{cur} of {total} matches',
+  reader_search_not_found: 'No matches found',
+  reader_bookmark_btn: 'Bookmark Page',
+  reader_bookmark_added: 'Page bookmarked successfully!',
+  reader_bookmark_removed: 'Bookmark removed',
+  reader_bookmarks_tab: '🔖 Bookmarks',
+  reader_chapters_tab: '📑 Chapters List',
+  reader_no_bookmarks: 'No bookmarks saved yet.',
+  pdf_open_new_tab: '↗ Open in New Tab',
+  pdf_download: '📥 Download PDF File'
 };
+

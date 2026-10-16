@@ -411,9 +411,33 @@
             </div>
 
             <div class="reader-controls">
+              <!-- Search In Book -->
+              <button type="button" class="reader-btn" id="reader-search-btn" title="Cari Kata di Buku" aria-label="Cari Teks">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span class="btn-hide-mobile" data-i18n="reader_search_btn">Cari</span>
+              </button>
+
+              <!-- Bookmark Toggle -->
+              <button type="button" class="reader-btn" id="reader-bookmark-btn" title="Tandai Halaman Ini" aria-label="Bookmark Halaman">
+                <span id="reader-bookmark-icon">🔖</span>
+                <span class="btn-hide-mobile" data-i18n="reader_bookmark_btn">Tandai</span>
+              </button>
+
               <!-- Table of Contents Toggle -->
               <button type="button" class="reader-btn" id="reader-toc-btn" title="Buka Daftar Isi & Bab Lengkap" aria-label="Daftar Isi">
-                <span data-i18n="reader_toc">📑 Daftar Isi</span>
+                <span data-i18n="reader_toc">📑 Bab</span>
+              </button>
+
+              <!-- Zoom Controls (50% to 150%) -->
+              <div class="control-group reader-zoom-group">
+                <button type="button" class="reader-btn" id="reader-zoom-dec" title="Perkecil Frame (Zoom Out)" aria-label="Perkecil Frame">🔍−</button>
+                <button type="button" class="reader-btn reader-zoom-val-btn" id="reader-zoom-val" title="Klik untuk Reset (100%)">100%</button>
+                <button type="button" class="reader-btn" id="reader-zoom-inc" title="Perbesar Frame (Zoom In)" aria-label="Perbesar Frame">🔍+</button>
+              </div>
+
+              <!-- Quick 50% Mobile Zoom Toggle Pill -->
+              <button type="button" class="reader-btn reader-quick-zoom-btn" id="reader-quick-zoom-50" title="Zoom Out 50% (Sangat Pas di HP)">
+                <span>50%</span>
               </button>
 
               <!-- Reading Mode Toggle (Halaman vs Gulir) -->
@@ -453,6 +477,18 @@
             </div>
           </div>
 
+          <!-- In-Reader Search Bar (Slide-down) -->
+          <div class="reader-search-bar" id="reader-search-bar" hidden>
+            <div class="reader-search-inner">
+              <svg class="reader-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="reader-search-input" placeholder="Cari kata di dalam buku ini..." data-i18n-ph="reader_search_ph" autocomplete="off" />
+              <span class="reader-search-stats" id="reader-search-stats">0/0</span>
+              <button type="button" class="reader-search-nav-btn" id="reader-search-prev-btn" title="Hasil Sebelumnya" disabled>↑</button>
+              <button type="button" class="reader-search-nav-btn" id="reader-search-next-btn" title="Hasil Berikutnya" disabled>↓</button>
+              <button type="button" class="reader-search-close-btn" id="reader-search-close-btn" title="Tutup Pencarian">✕</button>
+            </div>
+          </div>
+
           <!-- Reading Progress Bar -->
           <div class="reader-progress-track">
             <div class="reader-progress-fill" id="reader-progress-bar" style="width: 0%"></div>
@@ -460,14 +496,25 @@
 
           <!-- Reader Content Layout -->
           <div class="reader-content-layout">
-            <!-- Slide-out Table of Contents Drawer -->
+            <!-- Slide-out Table of Contents & Bookmarks Drawer -->
             <div class="reader-toc-drawer" id="reader-toc-drawer" hidden>
               <div class="reader-toc-header">
-                <h4 data-i18n="reader_toc_header">📑 Daftar Isi & Bab</h4>
+                <div class="reader-toc-tabs">
+                  <button type="button" class="reader-toc-tab-btn active" id="reader-toc-tab-chapters" data-tab="chapters">
+                    <span data-i18n="reader_chapters_tab">📑 Daftar Bab</span>
+                  </button>
+                  <button type="button" class="reader-toc-tab-btn" id="reader-toc-tab-bookmarks" data-tab="bookmarks">
+                    <span data-i18n="reader_bookmarks_tab">🔖 Bookmark</span>
+                    <span class="reader-tab-badge" id="reader-bookmark-count">0</span>
+                  </button>
+                </div>
                 <button type="button" class="reader-btn" id="reader-toc-close-btn" aria-label="Tutup Daftar Isi">✕</button>
               </div>
               <div class="reader-toc-list" id="reader-toc-list">
                 <!-- Injected dynamically -->
+              </div>
+              <div class="reader-bookmarks-list" id="reader-bookmarks-list" hidden>
+                <!-- Bookmarks injected dynamically -->
               </div>
             </div>
 
