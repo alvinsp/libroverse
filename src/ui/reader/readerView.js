@@ -5,6 +5,14 @@ import { escapeHtml } from '../../utils/domUtils.js';
 import { showToast } from '../../utils/toast.js';
 import { buildBookPages } from '../../services/parser/paginator.js';
 import { addOrUpdateShelfStatus } from '../../services/storage/shelfStorage.js';
+import {
+  saveHighlight,
+  deleteHighlight,
+  updateHighlightNote,
+  updateHighlightColor,
+  getHighlightsForBook,
+  updateHighlightsBadge
+} from '../../services/storage/highlightStorage.js';
 
 // ============================================================================
 // ZOOM MANAGEMENT (50% to 150%)
@@ -204,6 +212,333 @@ export function renderBookmarksList() {
 }
 
 // ============================================================================
+// HIGHLIGHTS & NOTES SYSTEM
+// ============================================================================
+let activeSelectionRange = null;
+let activeSelectedText = '';
+let activeModalHighlight = null;
+let activeModalColor = 'gold';
+let activeNotesTab = 'all';
+
+export function highlightTextInContainer(container, highlight) {
+  if (!container || !highlight || !highlight.text) return false;
+  if (container.querySelector(`[data-highlight-id="${highlight.id}"]`)) return true;
+
+  const targetText = highlight.text.trim();
+  if (targetText.length < 2) return false;
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+  const textNodes = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.parentElement?.closest('.reader-highlight, .reader-highlight-note-badge, button, nav')) continue;
+    textNodes.push(node);
+  }
+
+  // Exact match within single text node
+  for (const tNode of textNodes) {
+    const content = tNode.nodeValue || '';
+    const idx = content.indexOf(targetText);
+    if (idx !== -1) {
+      const before = content.substring(0, idx);
+      const matched = content.substring(idx, idx + targetText.length);
+      const after = content.substring(idx + targetText.length);
+
+      const mark = document.createElement('mark');
+      mark.className = `reader-highlight reader-highlight--${highlight.color || 'gold'} ${highlight.note ? 'has-note' : ''}`;
+      mark.dataset.highlightId = highlight.id;
+      mark.textContent = matched;
+
+      if (highlight.note) {
+        const badge = document.createElement('span');
+        badge.className = 'reader-highlight-note-badge';
+        badge.textContent = '💬';
+        badge.title = 'Lihat Catatan';
+        mark.appendChild(badge);
+      }
+
+      const parent = tNode.parentNode;
+      if (after) parent.insertBefore(document.createTextNode(after), tNode.nextSibling);
+      parent.insertBefore(mark, tNode.nextSibling);
+      tNode.nodeValue = before;
+      return true;
+    }
+  }
+
+  // Whitespace-normalized fallback
+  const normTarget = targetText.replace(/\s+/g, ' ').toLowerCase();
+  for (const tNode of textNodes) {
+    const content = tNode.nodeValue || '';
+    const normContent = content.replace(/\s+/g, ' ').toLowerCase();
+    const idx = normContent.indexOf(normTarget);
+    if (idx !== -1) {
+      const mark = document.createElement('mark');
+      mark.className = `reader-highlight reader-highlight--${highlight.color || 'gold'} ${highlight.note ? 'has-note' : ''}`;
+      mark.dataset.highlightId = highlight.id;
+      mark.textContent = content.substring(idx, idx + targetText.length);
+
+      if (highlight.note) {
+        const badge = document.createElement('span');
+        badge.className = 'reader-highlight-note-badge';
+        badge.textContent = '💬';
+        badge.title = 'Lihat Catatan';
+        mark.appendChild(badge);
+      }
+
+      const before = content.substring(0, idx);
+      const after = content.substring(idx + targetText.length);
+      const parent = tNode.parentNode;
+      if (after) parent.insertBefore(document.createTextNode(after), tNode.nextSibling);
+      parent.insertBefore(mark, tNode.nextSibling);
+      tNode.nodeValue = before;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export function applyHighlightsOnCurrentPage() {
+  if (!state.currentReadingBook) return;
+  const bookId = state.currentReadingBook.id;
+  const pageIdx = state.currentPageIndex;
+  const chapterIdx = state.currentChapterIndex;
+
+  const bookHighlights = getHighlightsForBook(bookId);
+  const relevantHighlights = bookHighlights.filter((h) => {
+    if (state.readerMode === 'scroll') {
+      return h.chapterIndex === chapterIdx;
+    }
+    return h.pageIndex === pageIdx || h.chapterIndex === chapterIdx;
+  });
+
+  const contentWrap = document.querySelector('#reader-body-content .epub-rendered-content');
+  if (!contentWrap || relevantHighlights.length === 0) return;
+
+  relevantHighlights.forEach((hl) => {
+    highlightTextInContainer(contentWrap, hl);
+  });
+
+  // Attach click listener to each mark element
+  contentWrap.querySelectorAll('.reader-highlight').forEach((mark) => {
+    mark.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const hlId = mark.dataset.highlightId;
+      const found = state.highlights.find((h) => h.id === hlId);
+      if (found) {
+        openNoteModal(found, false);
+      }
+    });
+  });
+}
+
+export function showSelectionToolbar(rect) {
+  const toolbar = document.getElementById('reader-selection-toolbar');
+  const container = document.getElementById('reader-container');
+  if (!toolbar || !container) return;
+
+  const contRect = container.getBoundingClientRect();
+  toolbar.hidden = false;
+
+  const toolbarWidth = 260;
+  const toolbarHeight = 44;
+  let top = rect.top - contRect.top - toolbarHeight - 12;
+  let left = rect.left - contRect.left + (rect.width / 2) - (toolbarWidth / 2);
+
+  if (top < 10) {
+    top = rect.bottom - contRect.top + 10;
+  }
+  left = Math.max(10, Math.min(contRect.width - toolbarWidth - 10, left));
+
+  toolbar.style.top = `${Math.round(top)}px`;
+  toolbar.style.left = `${Math.round(left)}px`;
+}
+
+export function hideSelectionToolbar() {
+  const toolbar = document.getElementById('reader-selection-toolbar');
+  if (toolbar) toolbar.hidden = true;
+  activeSelectionRange = null;
+  activeSelectedText = '';
+}
+
+export function applyHighlightFromSelection(color = 'gold') {
+  if (!activeSelectedText || !state.currentReadingBook) return;
+
+  const chapterTitle =
+    state.currentReadingBook.pagesList?.[state.currentPageIndex]?.chapterTitle ||
+    state.currentReadingBook.chapters?.[state.currentChapterIndex]?.title ||
+    'Bab 1';
+
+  const newHighlight = {
+    id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    bookId: state.currentReadingBook.id,
+    chapterIndex: state.currentChapterIndex,
+    pageIndex: state.currentPageIndex,
+    chapterTitle: chapterTitle,
+    text: activeSelectedText,
+    color: color,
+    note: '',
+    createdAt: new Date().toISOString()
+  };
+
+  saveHighlight(newHighlight);
+  hideSelectionToolbar();
+  window.getSelection()?.removeAllRanges();
+
+  applyHighlightsOnCurrentPage();
+  updateHighlightsBadge();
+  renderNotesList();
+  showToast(t('reader_highlight_saved'), '✨');
+}
+
+export function openNoteModal(highlight, isNew = false) {
+  activeModalHighlight = highlight;
+  activeModalColor = highlight.color || 'gold';
+
+  const modal = document.getElementById('reader-note-modal');
+  const quoteEl = document.getElementById('reader-note-quote-text');
+  const textarea = document.getElementById('reader-note-textarea');
+  const deleteBtn = document.getElementById('reader-note-delete-btn');
+  const titleEl = document.getElementById('reader-note-modal-title');
+
+  if (!modal) return;
+
+  if (titleEl) {
+    titleEl.textContent = isNew ? t('reader_note_add') : t('reader_note_edit');
+  }
+  if (quoteEl) {
+    quoteEl.textContent = `“${highlight.text}”`;
+  }
+  if (textarea) {
+    textarea.value = highlight.note || '';
+  }
+  if (deleteBtn) {
+    deleteBtn.hidden = isNew;
+  }
+
+  modal.querySelectorAll('.reader-note-color-picker .hl-color-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.color === activeModalColor);
+  });
+
+  modal.hidden = false;
+  setTimeout(() => textarea?.focus(), 60);
+}
+
+export function closeNoteModal() {
+  const modal = document.getElementById('reader-note-modal');
+  if (modal) modal.hidden = true;
+  activeModalHighlight = null;
+}
+
+export function openNotesDrawer() {
+  const drawer = document.getElementById('reader-notes-drawer');
+  const tocDrawer = document.getElementById('reader-toc-drawer');
+  const bookmarksDrawer = document.getElementById('reader-bookmarks-drawer');
+  if (tocDrawer) tocDrawer.hidden = true;
+  if (bookmarksDrawer) bookmarksDrawer.hidden = true;
+  document.getElementById('reader-toc-btn')?.classList.remove('active');
+
+  if (drawer) {
+    drawer.hidden = false;
+    renderNotesList();
+  }
+}
+
+export function closeNotesDrawer() {
+  const drawer = document.getElementById('reader-notes-drawer');
+  if (drawer) drawer.hidden = true;
+}
+
+export function renderNotesList() {
+  const listEl = document.getElementById('reader-notes-list');
+  if (!listEl || !state.currentReadingBook) return;
+
+  const allHls = getHighlightsForBook(state.currentReadingBook.id);
+  const filtered = activeNotesTab === 'with-notes'
+    ? allHls.filter((h) => h.note && h.note.trim().length > 0)
+    : allHls;
+
+  const tabAllSpan = document.querySelector('#reader-notes-tab-all span');
+  const tabNotesSpan = document.querySelector('#reader-notes-tab-with-notes span');
+  if (tabAllSpan) tabAllSpan.textContent = t('reader_notes_tab_all', { total: allHls.length });
+  if (tabNotesSpan) {
+    const withNotesCount = allHls.filter((h) => h.note && h.note.trim().length > 0).length;
+    tabNotesSpan.textContent = t('reader_notes_tab_with_notes', { total: withNotesCount });
+  }
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `
+      <div class="reader-empty-state">
+        <span class="empty-icon">📝</span>
+        <p>${t('reader_notes_empty')}</p>
+        <span style="font-size: 0.75rem; opacity: 0.7;">Sorot teks di buku untuk menandai kutipan penting atau menambahkan catatan refleksi.</span>
+      </div>
+    `;
+    return;
+  }
+
+  const isEn = state.currentLang === 'en';
+  listEl.innerHTML = filtered.map((hl) => {
+    const colorLabel = t(`reader_highlight_color_${hl.color}`) || hl.color;
+    return `
+      <div class="reader-note-item" data-hl-id="${hl.id}" data-page="${hl.pageIndex}">
+        <div class="reader-note-item-header">
+          <span class="hl-badge hl-badge--${hl.color}">${colorLabel}</span>
+          <span class="reader-toc-page-badge">${isEn ? 'Page' : 'Hal.'} ${(hl.pageIndex || 0) + 1}</span>
+        </div>
+        <blockquote class="reader-note-item-quote">"${escapeHtml(hl.text)}"</blockquote>
+        ${hl.note ? `
+          <div class="reader-note-item-body">
+            <span class="note-quote-icon">💭</span>
+            <p class="note-text">${escapeHtml(hl.note)}</p>
+          </div>
+        ` : ''}
+        <div class="reader-note-item-actions">
+          <button type="button" class="reader-note-item-btn" data-action="jump" title="Lompat ke Halaman">
+            <span>↗ ${isEn ? 'Jump' : 'Lompat'}</span>
+          </button>
+          <button type="button" class="reader-note-item-btn" data-action="edit" title="Edit Catatan">
+            <span>✏️ ${isEn ? 'Edit' : 'Catat'}</span>
+          </button>
+          <button type="button" class="reader-note-item-btn reader-note-item-btn--del" data-action="delete" title="Hapus">
+            <span>🗑️</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  listEl.querySelectorAll('.reader-note-item').forEach((item) => {
+    const hlId = item.dataset.hlId;
+    const pageIdx = parseInt(item.dataset.page, 10);
+    const hl = state.highlights.find((h) => h.id === hlId);
+
+    item.querySelector('[data-action="jump"]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!isNaN(pageIdx)) {
+        openReaderModal(state.currentReadingBook, pageIdx);
+        closeNotesDrawer();
+      }
+    });
+
+    item.querySelector('[data-action="edit"]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (hl) openNoteModal(hl, false);
+    });
+
+    item.querySelector('[data-action="delete"]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (hl && confirm(isEn ? 'Delete this highlight and note?' : 'Hapus sorotan dan catatan ini?')) {
+        deleteHighlight(hl.id);
+        renderNotesList();
+        openReaderModal(state.currentReadingBook, state.currentPageIndex);
+        showToast(t('reader_highlight_removed'), '🗑️');
+      }
+    });
+  });
+}
+
+// ============================================================================
 // IN-READER SEARCH SYSTEM
 // ============================================================================
 export function clearSearchHighlights() {
@@ -349,6 +684,8 @@ export function updateReaderLabels() {
 
   updateBookmarkUI();
   renderBookmarksList();
+  updateHighlightsBadge();
+  renderNotesList();
 }
 
 export function goToNextReaderPage() {
@@ -687,6 +1024,11 @@ export function openReaderModal(book, targetPageIndex = null) {
   updateBookmarkUI();
   renderBookmarksList();
 
+  // Apply Highlights & Notes to active page
+  applyHighlightsOnCurrentPage();
+  updateHighlightsBadge();
+  renderNotesList();
+
   // Re-apply search highlight if searching
   if (state.readerSearchQuery) {
     applySearchHighlightOnCurrentPage();
@@ -710,12 +1052,18 @@ export function closeReaderModal({ explicitUserClose = false } = {}) {
   const searchBar = document.getElementById('reader-search-bar');
   const searchBtn = document.getElementById('reader-search-btn');
   const bookmarksDrawer = document.getElementById('reader-bookmarks-drawer');
+  const notesDrawer = document.getElementById('reader-notes-drawer');
+  const selectionToolbar = document.getElementById('reader-selection-toolbar');
+  const noteModal = document.getElementById('reader-note-modal');
 
   if (tocDrawer) tocDrawer.hidden = true;
   if (tocBtn) tocBtn.classList.remove('active');
   if (searchBar) searchBar.hidden = true;
   if (searchBtn) searchBtn.classList.remove('active');
   if (bookmarksDrawer) bookmarksDrawer.hidden = true;
+  if (notesDrawer) notesDrawer.hidden = true;
+  if (selectionToolbar) selectionToolbar.hidden = true;
+  if (noteModal) noteModal.hidden = true;
 
   clearSearchHighlights();
 
@@ -847,6 +1195,159 @@ export function setupReaderControls() {
   });
 
   bookmarksCloseBtn?.addEventListener('click', closeBookmarksDrawer);
+
+  // Highlights & Notes Drawer Toggle
+  const notesBtn = document.getElementById('reader-notes-btn');
+  const notesDrawer = document.getElementById('reader-notes-drawer');
+  const notesCloseBtn = document.getElementById('reader-notes-close-btn');
+  const tabNotesAll = document.getElementById('reader-notes-tab-all');
+  const tabNotesWithNotes = document.getElementById('reader-notes-tab-with-notes');
+
+  notesBtn?.addEventListener('click', () => {
+    if (notesDrawer) {
+      const willShow = notesDrawer.hidden;
+      notesDrawer.hidden = !willShow;
+      if (willShow) {
+        if (tocDrawer) tocDrawer.hidden = true;
+        if (bookmarksDrawer) bookmarksDrawer.hidden = true;
+        tocBtn?.classList.remove('active');
+        renderNotesList();
+      }
+    }
+  });
+
+  notesCloseBtn?.addEventListener('click', closeNotesDrawer);
+
+  tabNotesAll?.addEventListener('click', () => {
+    activeNotesTab = 'all';
+    tabNotesAll.classList.add('active');
+    tabNotesWithNotes?.classList.remove('active');
+    renderNotesList();
+  });
+
+  tabNotesWithNotes?.addEventListener('click', () => {
+    activeNotesTab = 'with-notes';
+    tabNotesWithNotes.classList.add('active');
+    tabNotesAll?.classList.remove('active');
+    renderNotesList();
+  });
+
+  // Floating Selection Toolbar Listeners
+  const selectionToolbar = document.getElementById('reader-selection-toolbar');
+  const selectionCloseBtn = document.getElementById('selection-toolbar-close-btn');
+  const selectionAddNoteBtn = document.getElementById('selection-add-note-btn');
+
+  selectionCloseBtn?.addEventListener('click', hideSelectionToolbar);
+
+  selectionToolbar?.querySelectorAll('.selection-colors .hl-color-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const color = btn.dataset.color || 'gold';
+      applyHighlightFromSelection(color);
+    });
+  });
+
+  selectionAddNoteBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!activeSelectedText || !state.currentReadingBook) return;
+    const tempHighlight = {
+      id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      bookId: state.currentReadingBook.id,
+      chapterIndex: state.currentChapterIndex,
+      pageIndex: state.currentPageIndex,
+      chapterTitle:
+        state.currentReadingBook.pagesList?.[state.currentPageIndex]?.chapterTitle ||
+        state.currentReadingBook.chapters?.[state.currentChapterIndex]?.title ||
+        'Bab 1',
+      text: activeSelectedText,
+      color: 'gold',
+      note: '',
+      createdAt: new Date().toISOString()
+    };
+    hideSelectionToolbar();
+    openNoteModal(tempHighlight, true);
+  });
+
+  // Note Modal Listeners
+  const noteModal = document.getElementById('reader-note-modal');
+  const noteModalClose = document.getElementById('reader-note-modal-close');
+  const noteCancelBtn = document.getElementById('reader-note-cancel-btn');
+  const noteSaveBtn = document.getElementById('reader-note-save-btn');
+  const noteDeleteBtn = document.getElementById('reader-note-delete-btn');
+  const noteTextarea = document.getElementById('reader-note-textarea');
+
+  noteModalClose?.addEventListener('click', closeNoteModal);
+  noteCancelBtn?.addEventListener('click', closeNoteModal);
+
+  noteModal?.querySelectorAll('.reader-note-color-picker .hl-color-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeModalColor = btn.dataset.color || 'gold';
+      noteModal.querySelectorAll('.reader-note-color-picker .hl-color-btn').forEach((b) => {
+        b.classList.toggle('active', b === btn);
+      });
+    });
+  });
+
+  noteSaveBtn?.addEventListener('click', () => {
+    if (!activeModalHighlight) return;
+    activeModalHighlight.color = activeModalColor;
+    activeModalHighlight.note = (noteTextarea?.value || '').trim();
+    saveHighlight(activeModalHighlight);
+    closeNoteModal();
+    applyHighlightsOnCurrentPage();
+    updateHighlightsBadge();
+    renderNotesList();
+    showToast(t('reader_note_saved'), '📝');
+  });
+
+  noteDeleteBtn?.addEventListener('click', () => {
+    if (!activeModalHighlight) return;
+    deleteHighlight(activeModalHighlight.id);
+    closeNoteModal();
+    openReaderModal(state.currentReadingBook, state.currentPageIndex);
+    showToast(t('reader_highlight_removed'), '🗑️');
+  });
+
+  // Text selection handler on reader body
+  function checkSelection() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
+      return;
+    }
+    const text = sel.toString().trim();
+    if (text.length < 2) return;
+
+    const range = sel.getRangeAt(0);
+    const contentEl = document.querySelector('#reader-body-content .epub-rendered-content');
+    if (!contentEl || !contentEl.contains(range.commonAncestorContainer)) return;
+
+    activeSelectionRange = range.cloneRange();
+    activeSelectedText = text;
+    const rect = range.getBoundingClientRect();
+    showSelectionToolbar(rect);
+  }
+
+  bodyEl?.addEventListener('mouseup', () => {
+    setTimeout(checkSelection, 20);
+  });
+
+  bodyEl?.addEventListener('touchend', () => {
+    setTimeout(checkSelection, 100);
+  });
+
+  // Close selection toolbar when clicking outside
+  document.addEventListener('mousedown', (e) => {
+    if (
+      !e.target.closest('#reader-selection-toolbar') &&
+      !e.target.closest('#reader-note-modal') &&
+      !e.target.closest('.reader-highlight')
+    ) {
+      if (selectionToolbar && !selectionToolbar.hidden) {
+        hideSelectionToolbar();
+      }
+    }
+  });
 
   // Drawer Tabs switching inside TOC drawer
   tabChapters?.addEventListener('click', () => {

@@ -89,7 +89,8 @@ export function sanitizeElement(el) {
 
   // Clean publisher CSS class noise (e.g. calibre1, calibre2, MsoNormal, Apple-converted-space)
   if (el.hasAttribute('class')) {
-    const classes = el.className.split(/\s+/).filter((c) => {
+    const rawClass = typeof el.className === 'string' ? el.className : (el.getAttribute('class') || '');
+    const classes = rawClass.split(/\s+/).filter((c) => {
       const lower = c.toLowerCase();
       if (!lower) return false;
       if (lower.startsWith('calibre')) return false;

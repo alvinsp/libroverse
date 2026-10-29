@@ -11,7 +11,8 @@ export const STORAGE_KEYS = {
   READER_ZOOM: 'libroverse_reader_zoom',
   BOOKMARKS: 'libroverse_bookmarks',
   LAST_READ_SESSION: 'libroverse_last_read_session',
-  BOOK_PROGRESS_PREFIX: 'libroverse_progress_'
+  BOOK_PROGRESS_PREFIX: 'libroverse_progress_',
+  HIGHLIGHTS: 'libroverse_highlights'
 };
 
 export const DB_CONFIG = {

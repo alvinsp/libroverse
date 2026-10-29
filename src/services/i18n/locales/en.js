@@ -112,7 +112,26 @@ export default {
   reader_bookmark_list_btn: 'My Bookmarks',
   reader_ribbon_tooltip: 'Click to bookmark this page',
   reader_auto_resume_toast: 'Resumed reading "{title}" on Page {page}',
-  reader_resume_btn: 'Resume Reading'
+  reader_resume_btn: 'Resume Reading',
+  reader_highlight_title: 'Highlights & Notes',
+  reader_highlight_saved: 'Text highlighted successfully!',
+  reader_highlight_removed: 'Highlight removed',
+  reader_highlight_color_gold: 'Cosmic Gold',
+  reader_highlight_color_mint: 'Neon Mint',
+  reader_highlight_color_violet: 'Nebula Violet',
+  reader_highlight_color_cyan: 'Starlight Cyan',
+  reader_note_add: 'Add Note',
+  reader_note_edit: 'Edit Note',
+  reader_note_delete: 'Delete Highlight & Note',
+  reader_note_save: 'Save Note',
+  reader_note_cancel: 'Cancel',
+  reader_note_placeholder: 'Write your notes, thoughts, or reflections on this quote...',
+  reader_note_saved: 'Note saved successfully!',
+  reader_notes_drawer_title: '📝 Book Highlights & Notes',
+  reader_notes_tab_all: 'All ({total})',
+  reader_notes_tab_with_notes: 'With Notes ({total})',
+  reader_notes_empty: 'No highlights or notes yet for this book. Select text while reading to highlight or take notes.',
+  reader_notes_btn_tooltip: 'My Highlights & Notes'
 };
 
 

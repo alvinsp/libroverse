@@ -9,7 +9,13 @@ export function paginateHtmlContent(html, wordsPerPage = 380) {
   try {
     const parser = new DOMParser();
     const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
-    const container = doc.body.firstElementChild || doc.body;
+    let container = doc.body.firstElementChild || doc.body;
+    while (
+      container.children.length === 1 &&
+      ['section', 'div', 'main', 'article'].includes(container.firstElementChild.tagName.toLowerCase())
+    ) {
+      container = container.firstElementChild;
+    }
 
     const children = Array.from(container.children);
     if (children.length === 0) {
@@ -129,18 +135,22 @@ export function buildBookPages(book) {
 
   initialChapters.forEach((ch, idx) => {
     if (ch.isHtml) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(ch.content || '', 'text/html');
-      const splits = splitHtmlByTocOrHeadings(doc, knownTocTitles);
-      if (splits && splits.length > 1) {
-        splits.forEach((s) => expandedChapters.push(s));
+      if (ch.isAlreadyNormalized) {
+        expandedChapters.push(ch);
       } else {
-        const normalized = normalizeEpubChapter(ch.content, ch.title, knownTocTitles);
-        expandedChapters.push({
-          ...ch,
-          title: normalized.title || ch.title,
-          content: normalized.content
-        });
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(ch.content || '', 'text/html');
+        const splits = splitHtmlByTocOrHeadings(doc, knownTocTitles);
+        if (splits && splits.length > 1) {
+          splits.forEach((s) => expandedChapters.push(s));
+        } else {
+          const normalized = normalizeEpubChapter(ch.content, ch.title, knownTocTitles);
+          expandedChapters.push({
+            ...ch,
+            title: normalized.title || ch.title,
+            content: normalized.content
+          });
+        }
       }
     } else {
       const splits = parseTextIntoChapters(ch.content, ch.title || `Bab ${idx + 1}`);

@@ -19,6 +19,7 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
 | #9 | [Normalisasi EPUB & Eliminasi Judul Duplikat](#issue-9-normalisasi-epub-eliminasi-judul-duplikat-dan-tipografi-seperti-the-celestial-odyssey) | Parser / Typography | `[x] Solved` | `src/services/parser/epubNormalizer.js`, `src/style.css` |
 | #10 | [Zoom Out 50% di HP, Ergonomi Mobile, In-Reader Search & Bookmark](#issue-10-zoom-out-50-di-hp-ergonomi-mobile-in-reader-search--bookmark) | Mobile / UX / Feature | `[x] Solved` | `src/ui/reader/readerView.js`, `src/style.css`, `index.html` |
 | #11 | [Bookmark Menonjol, Kompaksi Frame Header/H1/Footer di HP, & Auto-Resume Halaman saat Buka Browser](#issue-11-bookmark-menonjol-kompaksi-frame-headerh1footer-di-hp--auto-resume-halaman-saat-buka-browser) | Mobile / UX / Persistence | `[x] Solved` | `src/ui/reader/readerView.js`, `src/style.css`, `src/main.js` |
+| #12 | [Perbaikan Konten EPUB Upload Tidak Terlihat & Fitur Highlight / Catatan](#issue-12-perbaikan-konten-epub-upload-tidak-terlihat--fitur-highlight--catatan) | Bug / EPUB Parser / Feature | `[x] Solved` | `src/services/parser/`, `src/services/storage/`, `src/ui/reader/` |
 
 ---
 
@@ -210,8 +211,43 @@ Dokumentasi pelacakan masalah (*issues*), permintaan fitur, dan status penyelesa
     - Status `autoResume` hanya dinonaktifkan jika pengguna secara eksplisit menekan tombol tutup `✕` atau tombol `Escape`.
 - **Status**: `[x] Solved`
 
+### Issue #12: Perbaikan Konten EPUB Upload Tidak Terlihat & Fitur Highlight / Catatan
+- **Laporan Pengguna**: *"saat upload epub, isi konten dari epub tidak terlihat, dan buatkan agar bisa seperti highlight atau catatan"*
+- **Penyebab**:
+  1. **Konten EPUB Hilang / Tidak Terlihat**:
+     - *Double Normalization*: Pada saat parsing EPUB, `parseEpubFile` sudah menjalankan `normalizeEpubChapter` untuk merapikan bab dan menghapus judul redundant. Namun saat paginator membangun halaman (`buildBookPages`), fungsi tersebut dipanggil sekali lagi, sehingga mendeteksi paragraf pertama konten nyata sebagai judul bab dan menghapusnya.
+     - *Prefix XML & Namespace*: Banyak berkas EPUB menggunakan elemen berekstensi namespace XML seperti `<opf:item>`, `<opf:itemref>`, `<dc:title>`, dsb. Menggunakan `getElementsByTagName('item')` standar mengembalikan array kosong `[]` pada dokumen XML, sehingga bab tidak terbaca.
+     - *Href Encoded & Anchor Fragments*: Elemen manifest berkas EPUB yang memiliki fragmen `#section-1` atau URL encoding seperti `%20` gagal dicocokkan dengan path JSZip jika tidak dibersihkan terlebih dahulu.
+     - *Crash Objek SVG*: Pada `epubNormalizer.js`, pemanggilan `el.className.split(' ')` menyebabkan `TypeError` jika elemen adalah `<svg>` karena atribut `className` berupa objek `SVGAnimatedString`.
+     - *CSS & Tema Gelap*: Variabel warna teks bawaan publisher EPUB sering kali berwarna hitam (`#000`), sementara kontainer pembaca memiliki mode gelap tanpa override kontras spesifik, menyebabkan teks menyatu dengan latar belakang gelap.
+  2. **Ketiadaan Fitur Highlight & Catatan**:
+     - Belum tersedia mekanisme mendeteksi seleksi teks kursor/layar sentuh, toolbar pemilih warna sorotan (*highlight*), penyimpanan data highlight persisten per buku dan halaman, indikator catatan visual, serta panel laci (*drawer*) untuk mereview seluruh kutipan dan catatan pembaca.
+- **Solusi**:
+  - [x] **Perbaikan Menyeluruh Engine Parser & Render EPUB**:
+    - Menambahkan helper `getXmlElements` di [src/services/parser/epubParser.js](file:///e:/projects/rea-libroverse/src/services/parser/epubParser.js) yang toleran terhadap namespace/prefix (`opf:`, `dc:`, atau tanpa prefix) dan fallback pencarian file `.opf` otomatis jika file `container.xml` tidak standar.
+    - Memperbaiki `resolveZipEntry` di [src/utils/domUtils.js](file:///e:/projects/rea-libroverse/src/utils/domUtils.js) untuk membersihkan fragmen hash `#`, parameter query `?`, decode URI, serta normalisasi path relatif.
+    - Menambahkan penanda `isAlreadyNormalized: true` pada bab yang telah dinormalisasi untuk mencegah *double normalization* pada [src/services/parser/paginator.js](file:///e:/projects/rea-libroverse/src/services/parser/paginator.js).
+    - Memperbaiki pemeriksaan tipe `typeof el.className === 'string'` di [src/services/parser/epubNormalizer.js](file:///e:/projects/rea-libroverse/src/services/parser/epubNormalizer.js) guna mencegah crash pada SVG.
+    - Memperkuat styling CSS pada `.epub-rendered-content *` di [src/style.css](file:///e:/projects/rea-libroverse/src/style.css) dengan `color: inherit`, `opacity: 1`, dan aturan visibilitas agar teks selalu terlihat kontras dan jernih di semua tema (Cosmic, Sepia, Dark, Clean).
+  - [x] **Infrastruktur Penyimpanan & State Highlight & Catatan**:
+    - Membuat layanan penyimpanan lokal persisten [src/services/storage/highlightStorage.js](file:///e:/projects/rea-libroverse/src/services/storage/highlightStorage.js) (`saveHighlight`, `deleteHighlight`, `updateHighlightNote`, `getHighlightsForBook`, `updateHighlightsBadge`).
+    - Menambahkan key penyimpanan `HIGHLIGHTS: 'libroverse_highlights'` pada [src/core/constants.js](file:///e:/projects/rea-libroverse/src/core/constants.js) dan mendaftarkannya pada [src/core/state.js](file:///e:/projects/rea-libroverse/src/core/state.js).
+  - [x] **UI Toolbar Seleksi Mengambang (*Floating Selection Popover*)**:
+    - Mengimplementasikan `#reader-selection-toolbar` di [index.html](file:///e:/projects/rea-libroverse/index.html) dan [src/ui/reader/readerView.js](file:///e:/projects/rea-libroverse/src/ui/reader/readerView.js) yang muncul mulus tepat di atas teks yang diblok/diseleksi oleh pembaca (baik mouse maupun touch screen).
+    - Menyediakan 4 palet warna kosmik: **Nebula Gold** (`#f6c90e`), **Pulsar Emerald** (`#00e676`), **Supernova Rose** (`#ff5252`), dan **Astral Cyan** (`#00e5ff`).
+    - Menambahkan tombol langsung untuk menambahkan catatan `[ 📝 Catatan ]` pada teks yang sedang dipilih.
+  - [x] **Modal Catatan Interaktif (*Note Editor Dialog*)**:
+    - Menghadirkan dialog modal `#reader-note-modal` dengan pratinjau kutipan teks yang disorot, textarea penulisan pemikiran/catatan, tombol simpan, dan tombol hapus sorotan.
+    - Teks buku yang memiliki catatan ditandai dengan ikon penanda visual kecil `📝` di akhir sorotan yang dapat diklik langsung untuk membaca atau mengedit catatan tersebut.
+  - [x] **Laci Sorotan & Catatan (*Highlights & Notes Drawer*)**:
+    - Menambahkan tombol navigasi di header pembaca `#reader-notes-btn` lengkap dengan badge jumlah (`[ 🖍 Sorotan & Catatan (N) ]`).
+    - Menyediakan panel laci samping `#reader-notes-drawer` yang merangkum semua sorotan dan catatan buku saat ini, lengkap dengan indikator warna, nomor halaman, teks catatan, tombol navigasi langsung ke halaman terkait, dan opsi hapus.
+  - [x] **Internasionalisasi (i18n)**:
+    - Menambahkan kamus terjemahan lengkap untuk Bahasa Indonesia ([src/services/i18n/locales/id.js](file:///e:/projects/rea-libroverse/src/services/i18n/locales/id.js)) dan Bahasa Inggris ([src/services/i18n/locales/en.js](file:///e:/projects/rea-libroverse/src/services/i18n/locales/en.js)).
+- **Status**: `[x] Solved`
+
 ---
 
-*Terakhir diperbarui: 2026-10-16 • Semua isu terverifikasi dan berstatus `[x] Solved`.*
+*Terakhir diperbarui: 2026-10-29 • Semua isu terverifikasi dan berstatus `[x] Solved`.*
 
 

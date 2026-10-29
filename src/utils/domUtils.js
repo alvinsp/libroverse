@@ -42,25 +42,38 @@ export function normalizePosixPath(baseDir, relativePath) {
 
 export function resolveZipEntry(zip, opfDir, href) {
   if (!href || !zip) return null;
-  const target = normalizePosixPath(opfDir, href);
-  let entry = zip.file(target);
-  if (entry) return entry;
+  // Strip URL fragments (#hash) and query parameters (?query)
+  const cleanHref = href.split('#')[0].split('?')[0].trim();
+  if (!cleanHref) return null;
 
-  const rawClean = normalizePosixPath('', href);
-  entry = zip.file(rawClean);
-  if (entry) return entry;
+  // Build candidate paths (both decoded and raw)
+  const candidateHrefs = [cleanHref];
+  try {
+    const decoded = decodeURIComponent(cleanHref);
+    if (decoded && decoded !== cleanHref) candidateHrefs.push(decoded);
+  } catch (e) {}
 
-  const lowerTarget = target.toLowerCase();
-  const baseName = target.split('/').pop().toLowerCase();
-  const allKeys = Object.keys(zip.files);
+  for (const cand of candidateHrefs) {
+    const target = normalizePosixPath(opfDir, cand);
+    let entry = zip.file(target);
+    if (entry && !zip.files[entry.name]?.dir) return entry;
 
-  const matchedKey = allKeys.find((k) => k.toLowerCase() === lowerTarget);
-  if (matchedKey) return zip.file(matchedKey);
+    const rawClean = normalizePosixPath('', cand);
+    entry = zip.file(rawClean);
+    if (entry && !zip.files[entry.name]?.dir) return entry;
 
-  const matchedEndKey = allKeys.find(
-    (k) => k.toLowerCase().endsWith('/' + baseName) || k.toLowerCase() === baseName
-  );
-  if (matchedEndKey) return zip.file(matchedEndKey);
+    const lowerTarget = target.toLowerCase();
+    const baseName = target.split('/').pop().toLowerCase();
+    const allKeys = Object.keys(zip.files);
+
+    const matchedKey = allKeys.find((k) => k.toLowerCase() === lowerTarget && !zip.files[k].dir);
+    if (matchedKey) return zip.file(matchedKey);
+
+    const matchedEndKey = allKeys.find(
+      (k) => (k.toLowerCase().endsWith('/' + baseName) || k.toLowerCase() === baseName) && !zip.files[k].dir
+    );
+    if (matchedEndKey) return zip.file(matchedEndKey);
+  }
 
   return null;
 }

@@ -426,6 +426,13 @@
                   <span class="reader-tab-badge" id="reader-bookmark-count">0</span>
                 </button>
 
+                <!-- Direct Highlights & Notes Drawer Button -->
+                <button type="button" class="reader-top-btn" id="reader-notes-btn" title="Lihat Catatan & Sorotan Saya" aria-label="Catatan dan Sorotan">
+                  <span>📝</span>
+                  <span class="reader-top-btn-label" data-i18n="reader_highlight_title">Catatan</span>
+                  <span class="reader-tab-badge" id="reader-notes-count">0</span>
+                </button>
+
                 <!-- Close Reader Button -->
                 <button type="button" class="reader-close-btn" id="reader-close-btn" aria-label="Tutup Pembaca Buku">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -539,6 +546,73 @@
               </div>
               <div class="reader-bookmarks-list" id="reader-bookmarks-modal-list">
                 <!-- Bookmarks injected dynamically -->
+              </div>
+            </div>
+
+            <!-- 3. Dedicated Slide-out Highlights & Notes Drawer -->
+            <div class="reader-notes-drawer" id="reader-notes-drawer" hidden>
+              <div class="reader-notes-header">
+                <h4 data-i18n="reader_notes_drawer_title">📝 Catatan & Sorotan Buku</h4>
+                <button type="button" class="reader-btn" id="reader-notes-close-btn" aria-label="Tutup Catatan">✕</button>
+              </div>
+              <div class="reader-notes-filter-tabs">
+                <button type="button" class="reader-notes-tab-btn active" id="reader-notes-tab-all" data-tab="all">
+                  <span data-i18n="reader_notes_tab_all">Semua</span>
+                </button>
+                <button type="button" class="reader-notes-tab-btn" id="reader-notes-tab-with-notes" data-tab="with-notes">
+                  <span data-i18n="reader_notes_tab_with_notes">Dengan Catatan</span>
+                </button>
+              </div>
+              <div class="reader-notes-list" id="reader-notes-list">
+                <!-- Highlights & Notes injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Floating Highlight Selection Toolbar -->
+            <div class="reader-selection-toolbar" id="reader-selection-toolbar" hidden>
+              <div class="selection-colors">
+                <button type="button" class="hl-color-btn hl-color-btn--gold" data-color="gold" title="Kuning Kosmik" aria-label="Sorot Kuning"></button>
+                <button type="button" class="hl-color-btn hl-color-btn--mint" data-color="mint" title="Mint Neon" aria-label="Sorot Mint"></button>
+                <button type="button" class="hl-color-btn hl-color-btn--violet" data-color="violet" title="Nebula Violet" aria-label="Sorot Ungu"></button>
+                <button type="button" class="hl-color-btn hl-color-btn--cyan" data-color="cyan" title="Sian Semesta" aria-label="Sorot Sian"></button>
+              </div>
+              <div class="selection-divider"></div>
+              <button type="button" class="selection-action-btn" id="selection-add-note-btn" title="Tambah Catatan">
+                <span>📝</span>
+                <span data-i18n="reader_note_add">Catatan</span>
+              </button>
+              <button type="button" class="selection-close-btn" id="selection-toolbar-close-btn" title="Tutup">✕</button>
+            </div>
+
+            <!-- Note Editor / Highlight Detail Modal Popover -->
+            <div class="reader-note-modal" id="reader-note-modal" hidden>
+              <div class="reader-note-box">
+                <div class="reader-note-header">
+                  <div class="reader-note-title-wrap">
+                    <span class="note-modal-icon">📝</span>
+                    <h4 id="reader-note-modal-title" data-i18n="reader_highlight_title">Catatan & Sorotan</h4>
+                  </div>
+                  <button type="button" class="reader-btn" id="reader-note-modal-close" aria-label="Tutup">✕</button>
+                </div>
+                <div class="reader-note-quote" id="reader-note-quote-text">
+                  <!-- Quote text injected here -->
+                </div>
+                <div class="reader-note-color-picker">
+                  <span class="color-picker-label">Warna:</span>
+                  <button type="button" class="hl-color-btn hl-color-btn--gold" data-color="gold" title="Kuning Kosmik"></button>
+                  <button type="button" class="hl-color-btn hl-color-btn--mint" data-color="mint" title="Mint Neon"></button>
+                  <button type="button" class="hl-color-btn hl-color-btn--violet" data-color="violet" title="Nebula Violet"></button>
+                  <button type="button" class="hl-color-btn hl-color-btn--cyan" data-color="cyan" title="Sian Semesta"></button>
+                </div>
+                <div class="reader-note-input-wrap">
+                  <textarea id="reader-note-textarea" rows="3" placeholder="Tuliskan catatan atau refleksi Anda tentang kutipan ini..." data-i18n-ph="reader_note_placeholder"></textarea>
+                </div>
+                <div class="reader-note-actions">
+                  <button type="button" class="reader-note-action-btn reader-note-action-btn--delete" id="reader-note-delete-btn" data-i18n="reader_note_delete">🗑️ Hapus</button>
+                  <div style="flex: 1;"></div>
+                  <button type="button" class="reader-note-action-btn reader-note-action-btn--cancel" id="reader-note-cancel-btn" data-i18n="reader_note_cancel">Batal</button>
+                  <button type="button" class="reader-note-action-btn reader-note-action-btn--save" id="reader-note-save-btn" data-i18n="reader_note_save">Simpan</button>
+                </div>
               </div>
             </div>
 

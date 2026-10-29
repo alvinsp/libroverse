@@ -112,7 +112,26 @@ export default {
   reader_bookmark_list_btn: 'Bookmark Saya',
   reader_ribbon_tooltip: 'Klik untuk tandai halaman ini',
   reader_auto_resume_toast: 'Melanjutkan membaca "{title}" di Halaman {page}',
-  reader_resume_btn: 'Lanjutkan Membaca'
+  reader_resume_btn: 'Lanjutkan Membaca',
+  reader_highlight_title: 'Sorotan & Catatan',
+  reader_highlight_saved: 'Teks berhasil disorot!',
+  reader_highlight_removed: 'Sorotan berhasil dihapus',
+  reader_highlight_color_gold: 'Kuning Kosmik',
+  reader_highlight_color_mint: 'Mint Neon',
+  reader_highlight_color_violet: 'Nebula Violet',
+  reader_highlight_color_cyan: 'Sian Semesta',
+  reader_note_add: 'Tambah Catatan',
+  reader_note_edit: 'Edit Catatan',
+  reader_note_delete: 'Hapus Sorotan & Catatan',
+  reader_note_save: 'Simpan Catatan',
+  reader_note_cancel: 'Batal',
+  reader_note_placeholder: 'Tuliskan catatan, pemikiran, atau refleksi Anda tentang kutipan ini...',
+  reader_note_saved: 'Catatan berhasil disimpan!',
+  reader_notes_drawer_title: '📝 Catatan & Sorotan Buku',
+  reader_notes_tab_all: 'Semua ({total})',
+  reader_notes_tab_with_notes: 'Dengan Catatan ({total})',
+  reader_notes_empty: 'Belum ada sorotan atau catatan untuk buku ini. Pilih teks saat membaca untuk mulai menandai atau membuat catatan.',
+  reader_notes_btn_tooltip: 'Catatan & Sorotan Saya'
 };
 
 
